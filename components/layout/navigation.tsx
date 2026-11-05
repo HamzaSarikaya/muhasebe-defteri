@@ -13,27 +13,27 @@ export const navigationItems = [
   {key: 'subscriptions', href: '/subscriptions', icon: Repeat2}
 ] as const satisfies ReadonlyArray<{key: string; href: string; icon: LucideIcon}>;
 
-export function Navigation({mobile = false}: {mobile?: boolean}) {
+export function Navigation({mobile = false, rail = false}: {mobile?: boolean; rail?: boolean}) {
   const t = useTranslations('Common');
   const pathname = usePathname();
   const items = mobile ? navigationItems : [...navigationItems, {key: 'reports' as const, href: '/reports', icon: ChartNoAxesCombined}];
 
-  return <nav aria-label={t(mobile ? 'mobileNavigation' : 'primaryNavigation')} className={mobile ? 'mobile-nav' : 'desktop-nav'}>
+  return <nav aria-label={t(mobile ? 'mobileNavigation' : rail ? 'quickNavigation' : 'primaryNavigation')} className={mobile ? 'mobile-nav' : rail ? 'rail-nav' : 'desktop-nav'}>
     {items.map(({key, href, icon: Icon}) => {
       const active = href === '/' ? pathname === '/' : pathname === href || pathname.startsWith(`${href}/`);
       const label = mobile && key === 'transactions' ? t('mobileTransactions') : mobile && key === 'subscriptions' ? t('mobileSubscriptions') : t(key);
-      return <Link key={key} href={href} aria-current={active ? 'page' : undefined} className={cn('nav-link', active && 'is-active')}>
+      return <Link key={key} href={href} aria-label={rail ? t(key) : undefined} title={rail ? t(key) : undefined} aria-current={active ? 'page' : undefined} className={cn('nav-link', active && 'is-active')}>
         <Icon size={20} strokeWidth={1.75} aria-hidden="true" />
-        <span>{label}</span>
+        <span className={rail ? 'sr-only' : undefined}>{label}</span>
       </Link>;
     })}
   </nav>;
 }
 
-export function SettingsLink() {
+export function SettingsLink({compact = false}: {compact?: boolean}) {
   const t = useTranslations('Common');
   const pathname = usePathname();
-  return <Link href="/settings" aria-current={pathname === '/settings' ? 'page' : undefined} className={cn('nav-link', pathname === '/settings' && 'is-active')}>
-    <Settings2 size={20} strokeWidth={1.75} aria-hidden="true" /><span>{t('settings')}</span>
+  return <Link href="/settings" aria-label={compact ? t('settings') : undefined} title={compact ? t('settings') : undefined} aria-current={pathname === '/settings' ? 'page' : undefined} className={cn('nav-link', pathname === '/settings' && 'is-active')}>
+    <Settings2 size={20} strokeWidth={1.75} aria-hidden="true" /><span className={compact ? 'sr-only' : undefined}>{t('settings')}</span>
   </Link>;
 }

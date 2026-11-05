@@ -6,7 +6,7 @@ import {cn} from '@/lib/utils';
 const buttonVariants = cva(
   'inline-flex min-h-11 items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-colors disabled:pointer-events-none disabled:opacity-50',
   {variants: {variant: {
-    default: 'bg-accent text-white hover:bg-blue-500',
+    default: 'bg-accent text-white hover:opacity-85',
     outline: 'border border-input bg-surface text-primary hover:bg-surface-hover',
     ghost: 'text-secondary hover:bg-surface-hover hover:text-primary'
   }}, defaultVariants: {variant: 'default'}}

@@ -49,7 +49,7 @@ Faz 4 yükseltmesi: üçüncü migration'ı uygulayın, `npm ci`, `npm run build
 
 ## Önceki sürümlerden yükseltme
 
-`0.4.0` kaynaklarını indirin ve mevcut `.env.local` dosyanızı koruyun. `0.1.0` veya `0.2.0` kuruluysa önce `supabase/migrations/202611050003_phase4.sql`, ardından `202611050004_access_defaults.sql` dosyasını birer kez uygulayın. `0.3.0` kuruluysa yalnızca dördüncü migration gerekir. Ardından `npm ci`, `npm run build` ve `npm start` ile yeniden başlatın. Önceden uygulanmış migration dosyalarını yeniden çalıştırmayın. Yeni kurulumda dört SQL dosyasının tamamını numara sırasıyla uygulayın.
+`0.4.1` kaynaklarını indirin ve mevcut `.env.local` dosyanızı koruyun. `0.1.0` veya `0.2.0` kuruluysa önce `supabase/migrations/202611050003_phase4.sql`, ardından `202611050004_access_defaults.sql` dosyasını birer kez uygulayın. `0.3.0` kuruluysa yalnızca dördüncü migration gerekir. Ardından `npm ci`, `npm run build` ve `npm start` ile yeniden başlatın. `0.4.0` üzerinden bu sürüme geçişte yeni migration gerekmez. Önceden uygulanmış migration dosyalarını yeniden çalıştırmayın. Yeni kurulumda dört SQL dosyasının tamamını numara sırasıyla uygulayın.
 
 ## Mobil kullanım ve PWA
 
