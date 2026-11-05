@@ -75,7 +75,8 @@
     "advance": "Advance",
     "accounts": "Subaccounts",
     "first": "First installment",
-    "next": "Other installments"
+    "next": "Other installments",
+    "offline": "No internet connection. Your form is kept on this screen; reconnect and try again."
   },
   "Common": {
     "appName": "Muhasebe",
@@ -94,7 +95,8 @@
     "settings": "Settings",
     "notAvailable": "Not yet available",
     "foundation": "Workspace ready",
-    "backHome": "Back to overview"
+    "backHome": "Back to overview",
+    "offline": "You are offline. Connect to view current records and save changes."
   },
   "Overview": {
     "title": "Overview",

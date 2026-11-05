@@ -4,6 +4,7 @@ import {Suspense, type ReactNode} from 'react';
 import {Link} from '@/i18n/navigation';
 import {Navigation, SettingsLink} from './navigation';
 import {LocaleSwitcher} from './locale-switcher';
+import {ConnectionNotice} from './connection-notice';
 
 export function AppShell({children}: {children: ReactNode}) {
   const t = useTranslations('Common');
@@ -27,7 +28,7 @@ export function AppShell({children}: {children: ReactNode}) {
           <Link href="/settings" className="settings-shortcut" aria-label={t('settings')}><Settings2 size={20} strokeWidth={1.75} aria-hidden="true" /></Link>
         </div>
       </header>
-      <main id="main-content" className="main-content" tabIndex={-1}>{children}</main>
+      <main id="main-content" className="main-content" tabIndex={-1}><ConnectionNotice />{children}</main>
     </div>
     <Navigation mobile />
   </div>;

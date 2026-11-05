@@ -75,7 +75,8 @@
     "advance": "Avans",
     "accounts": "Alt hesaplar",
     "first": "İlk taksit",
-    "next": "Diğer taksitler"
+    "next": "Diğer taksitler",
+    "offline": "İnternet bağlantısı yok. Formunuz bu ekranda korunuyor; bağlandıktan sonra yeniden deneyin."
   },
   "Common": {
     "appName": "Muhasebe",
@@ -94,7 +95,8 @@
     "settings": "Ayarlar",
     "notAvailable": "Henüz kullanıma açık değil",
     "foundation": "Çalışma alanı hazır",
-    "backHome": "Genel bakışa dön"
+    "backHome": "Genel bakışa dön",
+    "offline": "Çevrimdışısınız. Güncel kayıtlar ve değişiklikler için internete bağlanın."
   },
   "Overview": {
     "title": "Genel bakış",

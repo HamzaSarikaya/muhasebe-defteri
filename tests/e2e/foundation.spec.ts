@@ -92,6 +92,11 @@ test('offline navigation shows a localized fallback and caches no account docume
   await page.evaluate(async () => { await navigator.serviceWorker.ready; });
   await expect.poll(() => page.evaluate(() => navigator.serviceWorker.controller !== null)).toBe(true);
   await page.goto('/en/cards');
+  // Exercise request types that must never enter Cache Storage.
+  await page.evaluate(async () => {
+    await fetch('/en/cards?_rsc=privacy-check', {headers: {RSC: '1'}});
+    await fetch('/api/privacy-check');
+  });
   const cached = await page.evaluate(async () => {
     const urls: string[] = [];
     for (const name of await caches.keys()) {
@@ -112,4 +117,41 @@ test('offline navigation shows a localized fallback and caches no account docume
   } finally { await context.setOffline(false); }
   await page.getByRole('button', {name: 'Yeniden dene'}).click();
   await expect(page.getByRole('heading', {name: 'Müşteriler', exact: true})).toBeVisible();
+});
+
+test('a controlled page survives disconnect and reconnect without an automatic reload', async ({page, context}) => {
+  await page.goto('/tr');
+  await page.evaluate(async () => { await navigator.serviceWorker.ready; });
+  await expect.poll(() => page.evaluate(() => !!navigator.serviceWorker.controller)).toBe(true);
+  const sentinel = await page.evaluate(() => {
+    const value = crypto.randomUUID();
+    document.documentElement.dataset.connectionSentinel = value;
+    return value;
+  });
+  await context.setOffline(true);
+  await expect(page.locator('.connection-notice')).toContainText('Çevrimdışısınız');
+  await context.setOffline(false);
+  await expect(page.locator('.connection-notice')).toHaveCount(0);
+  // Allow the old Serwist online reload handler enough time to fail this regression.
+  await page.waitForTimeout(1200);
+  await expect(page.locator('html')).toHaveAttribute('data-connection-sentinel', sentinel);
+});
+
+test('offline fallback remains usable on a narrow display and recovers the original deep link', async ({page, context}) => {
+  await page.setViewportSize({width: 320, height: 640});
+  await page.goto('/en');
+  await page.evaluate(async () => { await navigator.serviceWorker.ready; });
+  await expect.poll(() => page.evaluate(() => !!navigator.serviceWorker.controller)).toBe(true);
+  await context.setOffline(true);
+  try {
+    await page.goto('/en/subscriptions');
+    await expect(page.getByRole('heading', {name: 'No internet connection'})).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    const result = await new AxeBuilder({page}).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze();
+    expect(result.violations).toEqual([]);
+    await page.screenshot({path: test.info().outputPath('offline-320.png'), fullPage: true});
+  } finally { await context.setOffline(false); }
+  await page.getByRole('button', {name: 'Try again'}).click();
+  await expect(page).toHaveURL('/en/subscriptions');
+  await expect(page.getByRole('heading', {name: 'Subscriptions', exact: true})).toBeVisible();
 });

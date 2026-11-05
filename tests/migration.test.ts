@@ -59,9 +59,26 @@ before(async () => {
   // Upgrade a populated Phase 1 ledger, including pre-existing cards and advances.
   await db.exec(await readFile(new URL('../supabase/migrations/202611050002_ledger.sql', import.meta.url), 'utf8'));
   await db.exec(await readFile(new URL('../supabase/migrations/202611050003_phase4.sql', import.meta.url), 'utf8'));
+  await db.exec(await readFile(new URL('../supabase/migrations/202611050004_access_defaults.sql', import.meta.url), 'utf8'));
 });
 
 after(async () => { await db.close(); });
+
+test('future public tables, sequences and functions have no implicit anonymous or authenticated access', async () => {
+  await db.exec('begin');
+  try {
+    await db.exec(`create table public.access_probe(id serial primary key);
+      create function public.access_probe_function() returns integer language sql as $$ select 1 $$;`);
+    for (const role of ['anon', 'authenticated']) {
+      const result = await db.query<{table_access: boolean; sequence_access: boolean; function_access: boolean; schema_create: boolean}>(`select
+        has_table_privilege($1, 'public.access_probe', 'SELECT,INSERT,UPDATE,DELETE') as table_access,
+        has_sequence_privilege($1, 'public.access_probe_id_seq', 'USAGE,SELECT,UPDATE') as sequence_access,
+        has_function_privilege($1, 'public.access_probe_function()', 'EXECUTE') as function_access,
+        has_schema_privilege($1, 'public', 'CREATE') as schema_create`, [role]);
+      assert.deepEqual(result.rows[0], {table_access: false, sequence_access: false, function_access: false, schema_create: false});
+    }
+  } finally { await db.exec('rollback'); }
+});
 
 test('migration creates eight tables, all with RLS and no persisted balance columns', async () => {
   const {rows} = await db.query<{relname: string; relrowsecurity: boolean}>("select relname,relrowsecurity from pg_class join pg_namespace on relnamespace=pg_namespace.oid where nspname='public' and relkind='r'");

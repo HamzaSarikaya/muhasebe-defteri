@@ -49,7 +49,21 @@ Faz 4 yükseltmesi: üçüncü migration'ı uygulayın, `npm ci`, `npm run build
 
 ## Önceki sürümlerden yükseltme
 
-`0.3.0` kaynaklarını indirin ve mevcut `.env.local` dosyanızı koruyun. `0.1.0` veya `0.2.0` kuruluysa yalnızca `supabase/migrations/202611050003_phase4.sql` dosyasını bir kez uygulayın. Ardından `npm ci`, `npm run build` ve `npm start` ile yeniden başlatın. Önceden uygulanmış migration dosyalarını yeniden çalıştırmayın. Yeni kurulumda üç SQL dosyasının tamamını numara sırasıyla uygulayın.
+`0.4.0` kaynaklarını indirin ve mevcut `.env.local` dosyanızı koruyun. `0.1.0` veya `0.2.0` kuruluysa önce `supabase/migrations/202611050003_phase4.sql`, ardından `202611050004_access_defaults.sql` dosyasını birer kez uygulayın. `0.3.0` kuruluysa yalnızca dördüncü migration gerekir. Ardından `npm ci`, `npm run build` ve `npm start` ile yeniden başlatın. Önceden uygulanmış migration dosyalarını yeniden çalıştırmayın. Yeni kurulumda dört SQL dosyasının tamamını numara sırasıyla uygulayın.
+
+## Mobil kullanım ve PWA
+
+Telefon ve yatay ekran yerleşimi, beş hedefli alt menü ve ekran kenarı boşlukları desteklenir. Android tarayıcısının yükleme seçeneği veya iOS Safari → Paylaş → Ana Ekrana Ekle ile kurabilirsiniz. HTTPS gerekir. Kurulu uygulama da finansal işlemleri çevrimiçi yapar.
+
+Çevrimdışıyken yeni sayfa açılışı Türkçe/İngilizce bilgi ekranına gider. Yeniden dene aynı adresi tekrar açar. Açık ekranda bağlantı uyarısı görünür; form gönderilmez ve yazılan alanlar yalnızca açık sekmenin belleğinde kalır. Bağlantı geri geldiğinde otomatik yenileme veya otomatik kayıt olmaz. Sekmeyi kapatmak veya elle yenilemek kaydedilmemiş alanları siler.
+
+Service worker yalnızca statik dosyaları ve çevrimdışı bilgi sayfasını önbelleğe alır. Finansal HTML, RSC, API ve oturum yanıtları saklanmaz. Geliştirme modunda service worker kapalıdır; çevrimdışı testi üretim derlemesinde yapılır.
+
+## Vercel ile yayın
+
+[DEPLOY.md](DEPLOY.md), Supabase kurulumu, Vercel ortam değişkenleri, ücretsiz plan sınırları, üretim kontrolleri ve geri dönüş adımlarını açıklar. Vercel `vercel.json` içindeki `npm run build:deploy` komutunu kullanır; eksik bağlantı ayarları, yerel sunucu, test modu veya açık kullanıcı kaydı varsa derleme durur. Normal `npm run build`, bağlantısız yerel inceleme için çalışır.
+
+Dördüncü migration, gelecekteki tablo ve fonksiyonların varsayılan erişimini kapatır. Yeni nesneler ancak kendi migration’larında açıkça izin verilirse API üzerinden kullanılabilir. Mevcut kayıtlar ve açıkça verilmiş uygulama izinleri korunur.
 
 ## Testler
 
@@ -63,6 +77,8 @@ npm run test:dashboard
 
 Standart tarayıcı testlerini bağlantı ayarları boşken çalıştırın. Oturum açmayı, taksitli harcamayı ve tahsilatı tarayıcıda denemek için ayrı bir yerel Supabase test projesi kullanın. Test projesinin bağlantı değişkenlerini ve `LEDGER_TEST_EMAIL`, `LEDGER_TEST_PASSWORD` değerlerini terminal ortamında tanımlayıp yeniden derleyin ve `npm run test:e2e` çalıştırın. Bu senaryo test hesabına kayıt yazar.
 
-`npm run test:dashboard`, ayrı bir derlemede yalnızca yerel bir servis taklidi kullanır. Oturum gereksinimi, döviz seçimi, dolu ve boş hesaplar, hata durumları, müşteri detayları, çok büyük tutarlar, limit aşımı, mobil yerleşim ve erişilebilirlik sınanır. 3101 ve 54329 portları boş olmalıdır. Abonelik ekleme, düzenleme, yenileme, duraklatma ve silme; işlem filtreleri ve gerçek CSV/JSON indirmeleri de sınanır. Test yazımları yalnızca bellekte tutulur. Test kayıtları gerçek veritabanına yazılmaz ve normal uygulamada gösterilmez.
+`npm run test:dashboard`, ayrı bir derlemede yalnızca yerel bir servis taklidi kullanır. Oturum gereksinimi, döviz seçimi, dolu ve boş hesaplar, hata durumları, müşteri detayları, çok büyük tutarlar, limit aşımı, mobil yerleşim ve erişilebilirlik sınanır. 3101 ve 54329 portları boş olmalıdır. Çevrimdışı kaydın engellenmesi, form alanlarının korunması, yeniden deneme, dokunma alanları, yatay telefon ve simüle edilmiş safe-area boşlukları da sınanır. Bunlar fiziksel cihaz testi değildir. Abonelik ekleme, düzenleme, yenileme, duraklatma ve silme; işlem filtreleri ve gerçek CSV/JSON indirmeleri de sınanır. Test yazımları yalnızca bellekte tutulur. Test kayıtları gerçek veritabanına yazılmaz ve normal uygulamada gösterilmez.
 
 Birim testleri ve yerel servis taklidi gerçek Supabase kimlik doğrulaması, oturum yenilemesi veya canlı bulut bağlantısını doğrulamaz. Canlı servislerle çalışan mali kayıt senaryosu ayrıca kendi test projenizde çalıştırılmalıdır. Üretim service worker'ı yalnızca statik uygulama dosyalarını ve çevrimdışı bilgi sayfasını önbelleğe alır; finansal sayfalar ve oturum yanıtları önbelleğe alınmaz.
+
+GitHub Actions, ana dal güncellemeleri ve pull request’lerde lint, TypeScript, birim/veritabanı testleri, üretim derlemesi, PWA ve dolu hesap tarayıcı senaryolarını çalıştıracak şekilde tanımlıdır.

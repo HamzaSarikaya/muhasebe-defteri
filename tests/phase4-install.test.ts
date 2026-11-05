@@ -18,7 +18,7 @@ test('clean install starts empty and new subscriptions retain exact amounts in t
       $$;
       grant usage on schema auth to anon, authenticated, service_role;
     `);
-    for (const name of ['202611050001_initial_schema.sql', '202611050002_ledger.sql', '202611050003_phase4.sql']) {
+    for (const name of ['202611050001_initial_schema.sql', '202611050002_ledger.sql', '202611050003_phase4.sql', '202611050004_access_defaults.sql']) {
       await db.exec(await readFile(new URL('../supabase/migrations/' + name, import.meta.url), 'utf8'));
     }
     assert.equal((await db.query('select * from public.profiles')).rows.length, 0);

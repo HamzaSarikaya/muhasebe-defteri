@@ -15,11 +15,13 @@ export function RecordForm({owner = '', action, label, children, confirm = false
   const request = useRef('');
   const locked = useRef(false);
   const [pending, setPending] = useState(false);
-  const [result, setResult] = useState<Result>();
+  const [result, setResult] = useState<Result | 'offline'>();
   const [generation, setGeneration] = useState(0);
-  return <form className="finance-form" onSubmit={async event => {
+  return <form className="finance-form" aria-busy={pending} onSubmit={async event => {
     event.preventDefault();
-    if (locked.current || (confirm && !window.confirm(t('confirm')))) return;
+    if (locked.current) return;
+    if (!navigator.onLine) { setResult('offline'); return; }
+    if (confirm && !window.confirm(t('confirm'))) return;
     const form = event.currentTarget;
     const values = new FormData(form);
     locked.current = true;

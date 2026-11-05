@@ -1,15 +1,21 @@
 import type {NextConfig} from 'next';
 import withSerwistInit from '@serwist/next';
 import createNextIntlPlugin from 'next-intl/plugin';
+import {createHash} from 'node:crypto';
+import {readFileSync} from 'node:fs';
 
 const withNextIntl = createNextIntlPlugin('./i18n/request.ts');
 const withSerwist = withSerwistInit({
   swSrc: 'app/sw.ts',
   swDest: 'public/sw.js',
   disable: process.env.NODE_ENV !== 'production' || process.env.LEDGER_DASHBOARD_TEST === '1',
+  // Reconnecting must not discard a partially completed form.
+  reloadOnOnline: false,
+  cacheOnNavigation: false,
+  globPublicPatterns: ['icons/**/*'],
   // Never precache rendered pages or financial / authentication responses.
   exclude: [/\.map$/, /\.html$/, /\.json$/, /\.rsc$/, /\.txt$/, /middleware-manifest/],
-  additionalPrecacheEntries: [{url: '/offline.html', revision: '1'}]
+  additionalPrecacheEntries: [{url: '/offline.html', revision: createHash('sha256').update(readFileSync('public/offline.html')).digest('hex')}]
 });
 
 const nextConfig: NextConfig = {
