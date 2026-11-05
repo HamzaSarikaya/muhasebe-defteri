@@ -1,9 +1,11 @@
 node_modules/
 .next/
+.next-dashboard/
 out/
 coverage/
 playwright-report/
 test-results/
+test-results-dashboard/
 *.tsbuildinfo
 .env*
 !.env.example

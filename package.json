@@ -1,6 +1,6 @@
 {
   "name": "muhasebe",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "engines": {
     "node": ">=22.0.0"
@@ -13,6 +13,7 @@
     "typecheck": "tsc --noEmit",
     "test": "tsx --test tests/*.test.ts",
     "test:e2e": "playwright test",
+    "test:dashboard": "playwright test -c playwright.dashboard.config.ts",
     "check": "npm run lint && npm run typecheck && npm test"
   },
   "dependencies": {
@@ -31,6 +32,7 @@
     "next-intl": "^4.14.9",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
+    "recharts": "^3.10.1",
     "server-only": "^0.0.1",
     "serwist": "^9.5.13",
     "tailwind-merge": "^3.7.0",

@@ -1,4 +1,5 @@
 import {getLocale, getTranslations} from 'next-intl/server';
+import {ChevronRight} from 'lucide-react';
 import {Link} from '@/i18n/navigation';
 import {isSupabaseConfigured} from '@/lib/supabase/config';
 import {createClient} from '@/lib/supabase/server';
@@ -12,6 +13,7 @@ type Module = 'cards' | 'clients' | 'transactions';
 
 async function Records({module}: {module: Module}) {
   const t = await getTranslations('Finance');
+  const d = await getTranslations('Dashboard');
   if (!isSupabaseConfigured()) return <section className="panel ledger-block"><p>{t('setup')}</p><Link href="/settings" className="ledger-link">{t('settings')}</Link></section>;
   const db = await createClient();
   const {data: {user}, error: authError} = await db.auth.getUser();
@@ -52,7 +54,7 @@ async function Records({module}: {module: Module}) {
     {module === 'clients' && <>
       <details className="panel ledger-block"><summary>{t('newClient')}</summary><RecordForm owner={owner} action="client" label={t('save')}><ClientFields/></RecordForm></details>
       {!data.clients.length && <p>{t('emptyClients')}</p>}
-      {data.clients.map(client => <section className="panel ledger-block" key={client.id}><header className="ledger-line"><div><h2>{client.name}</h2><small>{[client.email,client.phone].filter(Boolean).join(' · ')}</small></div>
+      {data.clients.map(client => <section className="panel ledger-block" key={client.id}><header className="ledger-line"><div><h2><Link href={'/clients/'+client.id} className="client-profile-link">{client.name}<ChevronRight size={16} strokeWidth={1.75} aria-hidden="true"/></Link></h2><small>{[client.email,client.phone].filter(Boolean).join(' · ')}</small><Link href={'/clients/'+client.id} className="section-link">{d('profile')}</Link></div>
         <div className="ledger-amount"><small>{t('balance')}</small>{accountBalance(client.id,totals.clients)}</div></header>
         <Editor owner={owner} kind="client" row={client}><ClientFields client={client}/></Editor>
         <h3 className="ledger-subtitle">{t('accounts')}</h3>

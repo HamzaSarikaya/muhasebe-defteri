@@ -6,13 +6,14 @@ const withNextIntl = createNextIntlPlugin('./i18n/request.ts');
 const withSerwist = withSerwistInit({
   swSrc: 'app/sw.ts',
   swDest: 'public/sw.js',
-  disable: process.env.NODE_ENV !== 'production',
+  disable: process.env.NODE_ENV !== 'production' || process.env.LEDGER_DASHBOARD_TEST === '1',
   // Never precache rendered pages or financial / authentication responses.
   exclude: [/\.map$/, /\.html$/, /\.json$/, /\.rsc$/, /\.txt$/, /middleware-manifest/],
   additionalPrecacheEntries: [{url: '/offline.html', revision: '1'}]
 });
 
 const nextConfig: NextConfig = {
+  distDir: process.env.LEDGER_DASHBOARD_TEST === '1' ? '.next-dashboard' : '.next',
   poweredByHeader: false,
   reactStrictMode: true,
   async headers() {
