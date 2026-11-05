@@ -1,0 +1,75 @@
+import {expect, test} from '@playwright/test';
+import AxeBuilder from '@axe-core/playwright';
+
+// Run against a disposable local workspace with an administrator created for testing.
+test('a card purchase and its partial collection reconcile across all three modules', async ({page}) => {
+  const email = process.env.LEDGER_TEST_EMAIL;
+  const password = process.env.LEDGER_TEST_PASSWORD;
+  if (!email || !password || !/^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(process.env.NEXT_PUBLIC_SUPABASE_URL ?? '')) {
+    throw new Error('This test requires a disposable local Supabase workspace and test login.');
+  }
+  const suffix = crypto.randomUUID().slice(0,8);
+  const card = 'Kart '+suffix, client = 'Müşteri '+suffix, account = 'Site '+suffix, title = 'Sunucu '+suffix;
+  await page.goto('/tr/cards');
+  await page.getByLabel('E-posta',{exact:true}).fill(email);
+  await page.getByLabel('Parola',{exact:true}).fill(password);
+  await page.getByRole('button',{name:'Giriş yap'}).click();
+  await page.getByText('Kart ekle',{exact:true}).click();
+  const cardForm = page.locator('details[open] form').first();
+  await cardForm.getByLabel('Ad',{exact:true}).fill(card);
+  await cardForm.getByLabel('Kart limiti').fill('10000');
+  await cardForm.getByRole('button',{name:'Kaydet'}).click();
+  await expect(page.getByRole('heading',{name:card,exact:true})).toBeVisible();
+  await page.goto('/tr/clients');
+  await page.getByText('Müşteri ekle',{exact:true}).click();
+  const clientForm = page.locator('details[open] form').first();
+  await clientForm.getByLabel('Ad',{exact:true}).fill(client);
+  await clientForm.getByRole('button',{name:'Kaydet'}).click();
+  const section = page.locator('section.ledger-block').filter({has:page.getByRole('heading',{name:client,exact:true})});
+  await section.getByText('Alt hesap ekle',{exact:true}).click();
+  const accountForm = section.locator('details[open] form').first();
+  await accountForm.getByLabel('Ad',{exact:true}).fill(account);
+  await accountForm.getByRole('button',{name:'Kaydet'}).click();
+  await expect(section.getByRole('heading',{name:account,exact:true})).toBeVisible();
+  await page.goto('/tr/transactions');
+  await page.getByText('Borç veya harcama ekle',{exact:true}).click();
+  const entry = page.locator('details[open] form').first();
+  await entry.getByLabel('Müşteri / alt hesap').selectOption({label:client+' / '+account});
+  await entry.getByRole('combobox',{name:'Kart',exact:true}).selectOption({label:card+' · TRY'});
+  await entry.getByLabel('Açıklama').fill(title);
+  await entry.getByLabel('Tutar',{exact:true}).fill('100,01');
+  await entry.getByLabel('Taksit sayısı').fill('3');
+  await expect(entry.locator('output')).toContainText('33,35');
+  const accessibility = await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa']).analyze();
+  expect(accessibility.violations).toEqual([]);
+  await entry.getByRole('button',{name:'Kaydet'}).click();
+  await expect(page.getByRole('heading',{name:title,exact:true})).toHaveCount(3);
+  const collect = page.locator('details').filter({has:page.locator('summary',{hasText:'Tahsilat kaydet'})});
+  await collect.locator('summary').click();
+  const option = collect.locator('option').filter({hasText:title+' (1/3)'});
+  await collect.getByLabel('Tahsil edilecek borç').selectOption(await option.getAttribute('value') ?? '');
+  await collect.getByLabel('Tutar',{exact:true}).fill('10,01');
+  await collect.getByRole('button',{name:'Tahsilat kaydet'}).click();
+  await expect(page.locator('article').filter({hasText:client+' · '+title})).toContainText('10,01');
+  await page.goto('/tr/cards');
+  const result = page.locator('section.ledger-block').filter({has:page.getByRole('heading',{name:card,exact:true})});
+  await expect(result.locator('dd').first()).toContainText('90,00');
+  await expect(result.locator('dd').nth(2)).toContainText('9.910,00');
+  await page.screenshot({path:test.info().outputPath('cards.png'),fullPage:true});
+  await page.goto('/tr/clients');
+  await expect(section.locator('.money')).toHaveText([/90,00/,/90,00/]);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page.goto('/tr/transactions');
+  page.on('dialog', dialog => dialog.accept());
+  const firstInstallment = page.locator('article').filter({has:page.getByRole('heading',{name:title,exact:true})}).filter({hasText:'Taksit 1/3'});
+  await firstInstallment.getByRole('button',{name:'Tüm taksitleri iptal et'}).click();
+  await expect(firstInstallment.getByRole('status')).toContainText('bağlı');
+  const receipt = page.locator('article').filter({has:page.getByRole('heading',{name:client+' · '+title,exact:true})});
+  await receipt.getByRole('button',{name:'Sil',exact:true}).click();
+  await expect(receipt).toHaveCount(0);
+  await firstInstallment.getByRole('button',{name:'Tüm taksitleri iptal et'}).click();
+  await expect(page.locator('article').filter({has:page.getByRole('heading',{name:title,exact:true})}).filter({hasText:'İptal edildi'})).toHaveCount(3);
+  await page.goto('/tr/cards');
+  await expect(result.locator('dd').first()).toHaveText(/₺0,00/);
+});
+

@@ -1,0 +1,9 @@
+project_id = "muhasebe"
+
+[db]
+major_version = 17
+
+[auth]
+site_url = "http://localhost:3000"
+additional_redirect_urls = ["http://localhost:3000/tr", "http://localhost:3000/en"]
+enable_signup = false
