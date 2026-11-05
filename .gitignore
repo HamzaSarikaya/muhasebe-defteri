@@ -16,3 +16,4 @@ public/swe-worker-*.js*
 public/worker-*.js*
 .DS_Store
 Thumbs.db
+dist/

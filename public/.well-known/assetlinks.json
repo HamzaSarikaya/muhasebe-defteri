@@ -1,0 +1,14 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "app.muhasebedefteri.android",
+      "sha256_cert_fingerprints": [
+        "BD:F1:9C:FB:85:08:8F:31:00:02:40:24:3B:D9:52:C7:15:AC:16:39:53:41:6C:5E:AE:99:2E:BE:FB:69:DB:A1"
+      ]
+    }
+  }
+]
