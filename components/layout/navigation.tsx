@@ -21,9 +21,10 @@ export function Navigation({mobile = false}: {mobile?: boolean}) {
   return <nav aria-label={t(mobile ? 'mobileNavigation' : 'primaryNavigation')} className={mobile ? 'mobile-nav' : 'desktop-nav'}>
     {items.map(({key, href, icon: Icon}) => {
       const active = href === '/' ? pathname === '/' : pathname === href || pathname.startsWith(`${href}/`);
+      const label = mobile && key === 'transactions' ? t('mobileTransactions') : mobile && key === 'subscriptions' ? t('mobileSubscriptions') : t(key);
       return <Link key={key} href={href} aria-current={active ? 'page' : undefined} className={cn('nav-link', active && 'is-active')}>
         <Icon size={20} strokeWidth={1.75} aria-hidden="true" />
-        <span>{t(key)}</span>
+        <span>{label}</span>
       </Link>;
     })}
   </nav>;

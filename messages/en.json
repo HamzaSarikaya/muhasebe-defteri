@@ -96,7 +96,9 @@
     "notAvailable": "Not yet available",
     "foundation": "Workspace ready",
     "backHome": "Back to overview",
-    "offline": "You are offline. Connect to view current records and save changes."
+    "offline": "You are offline. Connect to view current records and save changes.",
+    "mobileTransactions": "Activity",
+    "mobileSubscriptions": "Recurring"
   },
   "Overview": {
     "title": "Overview",

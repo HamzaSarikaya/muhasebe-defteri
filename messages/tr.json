@@ -96,7 +96,9 @@
     "notAvailable": "Henüz kullanıma açık değil",
     "foundation": "Çalışma alanı hazır",
     "backHome": "Genel bakışa dön",
-    "offline": "Çevrimdışısınız. Güncel kayıtlar ve değişiklikler için internete bağlanın."
+    "offline": "Çevrimdışısınız. Güncel kayıtlar ve değişiklikler için internete bağlanın.",
+    "mobileTransactions": "İşlemler",
+    "mobileSubscriptions": "Abonelik"
   },
   "Overview": {
     "title": "Genel bakış",

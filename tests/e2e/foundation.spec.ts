@@ -48,8 +48,19 @@ test('small screens have no horizontal overflow and overview passes accessibilit
   const initialViewport = page.viewportSize();
   for (const width of [320, 390, 768, 1440]) {
     await page.setViewportSize({width, height: 900});
-    await page.goto('/tr');
-    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), `width ${width}`).toBe(true);
+    for (const locale of ['tr', 'en']) {
+      await page.goto('/' + locale);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), `${locale} width ${width}`).toBe(true);
+      if (width < 768) {
+        const labels = await page.locator('.mobile-nav span').evaluateAll(items => items.map(item => {
+          const box = item.getBoundingClientRect();
+          return {left: box.left, right: box.right};
+        }));
+        expect(labels[0].left).toBeGreaterThanOrEqual(0);
+        expect(labels.at(-1)!.right).toBeLessThanOrEqual(width);
+        for (let i = 1; i < labels.length; i++) expect(labels[i - 1].right).toBeLessThanOrEqual(labels[i].left);
+      }
+    }
   }
   if (initialViewport) await page.setViewportSize(initialViewport);
   await page.goto('/tr');
