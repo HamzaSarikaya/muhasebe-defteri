@@ -58,6 +58,7 @@ before(async () => {
   `);
   // Upgrade a populated Phase 1 ledger, including pre-existing cards and advances.
   await db.exec(await readFile(new URL('../supabase/migrations/202611050002_ledger.sql', import.meta.url), 'utf8'));
+  await db.exec(await readFile(new URL('../supabase/migrations/202611050003_phase4.sql', import.meta.url), 'utf8'));
 });
 
 after(async () => { await db.close(); });
@@ -233,4 +234,66 @@ test('card currency is frozen and third-currency purchases require an explicit s
   await db.exec('begin; set local role anon');
   try { await assert.rejects(db.exec('select public.ledger_snapshot()'), {code:'42501'}); }
   finally { await db.exec('rollback'); }
+});
+
+test('phase 4 snapshot includes complete backup fields, exact amounts and only owned subscriptions', async () => {
+  await asUser(owner, async () => {
+    const {rows} = await db.query<{data: Ledger & {profile: {id: string}}}>('select public.ledger_snapshot() as data');
+    const data = rows[0].data;
+    assert.equal(data.subscriptions.length, 1);
+    assert.equal(data.subscriptions[0].name, 'Service');
+    assert.equal(data.subscriptions[0].amount, '10000');
+    assert.equal(data.subscriptions[0].billing_anchor_day, 5);
+    assert.equal(data.transactions[0].category, 'personal');
+    assert.equal(data.profile.id, owner);
+    assert.equal(typeof (data.transactions[0] as unknown as {amount_base: string}).amount_base, 'string');
+    assert.equal(typeof (data.transactions[0] as unknown as {exchange_rate: string}).exchange_rate, 'string');
+  });
+});
+
+test('monthly renewals preserve day 31 through February and stale retries do not advance twice', async () => {
+  await asUser(owner, async () => {
+    const {rows} = await db.query<{id: string}>(`insert into public.subscriptions(user_id,name,amount,billing_cycle,next_billing_date) values ('${owner}','Month end',100,'monthly','2027-01-31') returning id`);
+    const id = rows[0].id;
+    const advance = async (expected: string) => (await db.query<{ok: boolean}>('select public.advance_subscription($1,$2) as ok', [id, expected])).rows[0].ok;
+    assert.equal(await advance('2027-01-31'), true);
+    assert.equal(await advance('2027-01-31'), false);
+    assert.equal(await advance('2027-02-28'), true);
+    const result = await db.query<{date: string; day: number}>('select next_billing_date::text as date,billing_anchor_day as day from public.subscriptions where id=$1', [id]);
+    assert.deepEqual(result.rows[0], {date: '2027-03-31', day: 31});
+    await db.query("update public.subscriptions set next_billing_date='2027-04-15' where id=$1", [id]);
+    assert.equal(await advance('2027-04-15'), true);
+    assert.equal((await db.query<{date: string}>('select next_billing_date::text as date from public.subscriptions where id=$1', [id])).rows[0].date, '2027-05-15');
+  });
+});
+
+test('yearly renewals retain leap-day anchor, cannot renew paused or foreign subscriptions', async () => {
+  await asUser(owner, async () => {
+    const {rows} = await db.query<{id: string}>(`insert into public.subscriptions(user_id,name,amount,billing_cycle,next_billing_date) values ('${owner}','Leap year',100,'yearly','2024-02-29') returning id`);
+    const id = rows[0].id;
+    for (const date of ['2024-02-29','2025-02-28','2026-02-28','2027-02-28']) {
+      assert.equal((await db.query<{ok: boolean}>('select public.advance_subscription($1,$2) as ok', [id,date])).rows[0].ok, true);
+    }
+    assert.equal((await db.query<{date: string}>('select next_billing_date::text as date from public.subscriptions where id=$1', [id])).rows[0].date, '2028-02-29');
+    await db.query('update public.subscriptions set is_active=false where id=$1', [id]);
+    assert.equal((await db.query<{ok: boolean}>("select public.advance_subscription($1,'2028-02-29') as ok", [id])).rows[0].ok, false);
+  });
+  const foreign = (await db.query<{id: string}>('select id from public.subscriptions where user_id=$1', [other])).rows[0].id;
+  await asUser(owner, async () => {
+    assert.equal((await db.query<{ok: boolean}>("select public.advance_subscription($1,'2027-11-05') as ok", [foreign])).rows[0].ok, false);
+  });
+  await db.exec('begin; set local role anon');
+  try {await assert.rejects(db.exec(`select public.advance_subscription('${foreign}','2027-11-05')`), {code: '42501'});}
+  finally {await db.exec('rollback');}
+});
+
+test('subscription date overflow and oversized new metadata fail without changing records', async () => {
+  await asUser(owner, async () => {
+    const {rows} = await db.query<{id: string}>(`insert into public.subscriptions(user_id,name,amount,billing_cycle,next_billing_date) values ('${owner}','Last supported year',100,'yearly','9999-12-31') returning id`);
+    await db.exec('savepoint before_renewal');
+    await assert.rejects(db.query("select public.advance_subscription($1,'9999-12-31')", [rows[0].id]), {code: '23514'});
+    await db.exec('rollback to before_renewal');
+    assert.equal((await db.query<{date: string}>('select next_billing_date::text as date from public.subscriptions where id=$1', [rows[0].id])).rows[0].date, '9999-12-31');
+  });
+  await rejects(`insert into public.subscriptions(user_id,name,provider,amount,billing_cycle,next_billing_date) values ('${owner}','Too long',repeat('x',121),100,'monthly','2027-01-01')`, '23514');
 });

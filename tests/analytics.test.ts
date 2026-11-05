@@ -6,7 +6,7 @@ import {balances, type Entry, type Ledger, type Payment} from '../lib/finance/le
 const entry: Entry = {id: 't', title: 'Hosting', amount: '10001', currency: 'TRY', type: 'debt', status: 'pending', client_id: 'c', client_account_id: 'a', credit_card_id: 'k', card_rate: '1', fx_offset: '0', installment_count: 3, installment_current: 1, installment_group_id: 'g', transaction_date: '2026-10-01', due_date: '2026-11-01'};
 const payment: Payment = {id: 'p', amount: '3001', currency: 'TRY', client_id: 'c', client_account_id: 'a', transaction_id: 't', payment_date: '2026-11-03', payment_method: 'cash'};
 function ledger(): Ledger {
-  return {base: 'TRY', defaults: true, clients: [{id: 'c', name: 'Müşteri 01', is_active: true, email: null, phone: null}], accounts: [{id: 'a', client_id: 'c', name: 'Site', is_active: true}], cards: [{id: 'k', name: 'Kart 01', primary_user: null, currency: 'TRY', is_active: true, credit_limit: '20000', statement_day: null, due_day: null}], transactions: [{...entry}], payments: [{...payment}]};
+  return {base: 'TRY', defaults: true, subscriptions: [], clients: [{id: 'c', name: 'Müşteri 01', is_active: true, email: null, phone: null}], accounts: [{id: 'a', client_id: 'c', name: 'Site', is_active: true}], cards: [{id: 'k', name: 'Kart 01', primary_user: null, currency: 'TRY', is_active: true, credit_limit: '20000', statement_day: null, due_day: null}], transactions: [{...entry}], payments: [{...payment}]};
 }
 
 test('dashboard reconciles partial collections, remaining installments and card shares', () => {

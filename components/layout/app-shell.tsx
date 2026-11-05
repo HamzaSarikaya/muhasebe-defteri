@@ -1,4 +1,4 @@
-import {BookOpen, Settings2} from 'lucide-react';
+import {BookOpen, ChartNoAxesCombined, Settings2} from 'lucide-react';
 import {useTranslations} from 'next-intl';
 import {Suspense, type ReactNode} from 'react';
 import {Link} from '@/i18n/navigation';
@@ -22,6 +22,7 @@ export function AppShell({children}: {children: ReactNode}) {
         <Link href="/" className="mobile-brand"><BookOpen size={22} strokeWidth={1.75} aria-hidden="true" />{t('appName')}</Link>
         <span className="desktop-workspace-label">{t('workspace')}</span>
         <div className="topbar-actions">
+          <Link href="/reports" className="reports-shortcut settings-shortcut" aria-label={t('reports')}><ChartNoAxesCombined size={20} strokeWidth={1.75} aria-hidden="true"/></Link>
           <Suspense fallback={<span className="locale-placeholder" />}><LocaleSwitcher /></Suspense>
           <Link href="/settings" className="settings-shortcut" aria-label={t('settings')}><Settings2 size={20} strokeWidth={1.75} aria-hidden="true" /></Link>
         </div>

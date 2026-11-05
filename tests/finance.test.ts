@@ -41,7 +41,7 @@ test('partial and full payments, advances and refunds conserve account and card 
   const entry: Entry={id:'t',title:'Debt',type:'debt',status:'pending',amount:'3',currency:'USD',client_id:'c',client_account_id:'a',
     credit_card_id:'k',card_rate:'1.5',fx_offset:'0',transaction_date:'2026-11-05',due_date:null,installment_count:1,installment_current:1,installment_group_id:null};
   const payment: Payment={id:'p',client_id:'c',client_account_id:'a',transaction_id:'t',amount:'1',currency:'USD',payment_date:'2026-11-05',payment_method:'cash'};
-  const data: Ledger={base:'TRY',defaults:false,cards:[],accounts:[],clients:[],transactions:[entry],payments:[payment]};
+  const data: Ledger={base:'TRY',defaults:false,subscriptions:[],cards:[],accounts:[],clients:[],transactions:[entry],payments:[payment]};
   assert.equal(balances(data).cards.get('k'),3n);
   assert.equal(balances(data).accounts.get('a/USD'),2n);
   data.payments.push({...payment,id:'p2',amount:'2'},{...payment,id:'p3',amount:'8',transaction_id:null});

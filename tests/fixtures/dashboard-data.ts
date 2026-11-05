@@ -16,6 +16,12 @@ const debt: Entry = {id: '50000000-0000-0000-0000-000000000001', title: 'İşlem
 
 export const sampleLedger: Ledger = {
   base: 'TRY', defaults: true,
+  subscriptions: [
+    {id: '80000000-0000-0000-0000-000000000001', name: 'Abonelik 01', provider: 'Abonelik 01', amount: '9999', currency: 'TRY', billing_cycle: 'monthly', next_billing_date: day(-1), billing_anchor_day: Number(day(-1).slice(8)), billing_anchor_month: Number(day(-1).slice(5, 7)), credit_card_id: card01, is_active: true, category: 'entertainment', notes: null},
+    {id: '80000000-0000-0000-0000-000000000002', name: 'Abonelik 02', provider: 'Sağlayıcı 02', amount: '10001', currency: 'TRY', billing_cycle: 'yearly', next_billing_date: day(10), billing_anchor_day: Number(day(10).slice(8)), billing_anchor_month: Number(day(10).slice(5, 7)), credit_card_id: null, is_active: true, category: 'entertainment', notes: null},
+    {id: '80000000-0000-0000-0000-000000000003', name: 'Abonelik 03', provider: null, amount: '90000', currency: 'TRY', billing_cycle: 'monthly', next_billing_date: day(-10), billing_anchor_day: 1, billing_anchor_month: 1, credit_card_id: null, is_active: false, category: 'other', notes: null},
+    {id: '80000000-0000-0000-0000-000000000004', name: 'Abonelik 04', provider: 'Sağlayıcı 04', amount: '1200', currency: 'USD', billing_cycle: 'monthly', next_billing_date: day(3), billing_anchor_day: Number(day(3).slice(8)), billing_anchor_month: Number(day(3).slice(5, 7)), credit_card_id: card02, is_active: true, category: 'productivity', notes: null}
+  ],
   clients: [{id: client01, name: 'Müşteri 01', email: null, phone: null, is_active: true}, {id: client02, name: 'Müşteri 02', email: null, phone: null, is_active: true}],
   accounts: [{id: account, client_id: client01, name: 'Alt hesap 01', is_active: true}, {id: otherAccount, client_id: client02, name: 'Alt hesap 02', is_active: true}],
   cards: [

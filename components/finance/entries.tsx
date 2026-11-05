@@ -5,6 +5,8 @@ import {useTranslations} from 'next-intl';
 import {currencies, formatMoney, installments, minor, type Currency} from '@/lib/finance/money';
 import {balances, type Ledger} from '@/lib/finance/ledger';
 import {Field, RecordForm, Remove} from './forms';
+import {emptyFilters, filterActivity} from '@/lib/finance/reports';
+import {ActivityFilters, ExportTools} from './activity-tools';
 
 function EntryFields({data, today, locale}: {data: Ledger; today: string; locale: string}) {
   const t = useTranslations('Finance');
@@ -39,6 +41,9 @@ function EntryFields({data, today, locale}: {data: Ledger; today: string; locale
 
 export function Entries({owner,data,today,locale}: {owner: string; data: Ledger; today: string; locale: string}) {
   const t = useTranslations('Finance');
+  const a = useTranslations('Activity');
+  const [filters, setFilters] = useState(emptyFilters);
+  const selected = filterActivity(data, filters);
   const {allocated} = balances(data);
   const accounts = new Map(data.accounts.map(a => [a.id,a.name]));
   const clients = new Map(data.clients.map(c => [c.id,c.name]));
@@ -57,8 +62,9 @@ export function Entries({owner,data,today,locale}: {owner: string; data: Ledger;
         <label>{t('method')}<select name="method">{['bank_transfer','cash','card'].map(k => <option key={k} value={k}>{t(k)}</option>)}</select></label>
       </RecordForm> : <p>{t('noDebt')}</p>}
     </details>
-    <section className="panel ledger-block"><h2>{t('history')}</h2>{!data.transactions.length && <p>{t('empty')}</p>}
-      {data.transactions.map(e => <article key={e.id} className="ledger-line"><div><h3>{e.title}</h3>
+    <section className="panel ledger-block" aria-label={a('filters')}><ActivityFilters value={filters} onChange={setFilters}/><p className="filter-note" role="status">{a('results', {entries: selected.transactions.length, payments: selected.payments.length})}</p></section>
+    <section className="panel ledger-block"><h2>{t('history')}</h2>{!selected.transactions.length && <p>{a('noResults')}</p>}
+      {selected.transactions.map(e => <article key={e.id} className="ledger-line"><div><h3>{e.title}</h3>
         <small>{t(e.type)} · {clients.get(e.client_id ?? '')} {accounts.get(e.client_account_id ?? '')} {data.cards.find(c => c.id === e.credit_card_id)?.name}</small>
         <small>{e.transaction_date} {e.due_date && ' · '+t('dueLabel')+' '+e.due_date} {e.installment_count > 1 && ' · '+t('installment')+' '+e.installment_current+'/'+e.installment_count}</small></div>
         <div className="ledger-amount"><strong className="money">{formatMoney(e.amount,e.currency,locale)}</strong>
@@ -66,10 +72,11 @@ export function Entries({owner,data,today,locale}: {owner: string; data: Ledger;
           {e.status !== 'cancelled' && e.installment_current === 1 && <RecordForm owner={owner} action="cancel" confirm label={t(e.installment_count > 1 ? 'cancelGroup' : 'cancel')}><input type="hidden" name="id" value={e.id}/></RecordForm>}
         </div></article>)}
     </section>
-    <section className="panel ledger-block"><h2>{t('receipts')}</h2>{!data.payments.length && <p>{t('empty')}</p>}
-      {data.payments.map(p => <article key={p.id} className="ledger-line"><div><h3>{clients.get(p.client_id)} · {entries.get(p.transaction_id ?? '')?.title ?? t('advance')}</h3><small>{p.payment_date} · {t(p.payment_method)}</small></div>
+    <section className="panel ledger-block"><h2>{t('receipts')}</h2>{!selected.payments.length && <p>{a('noResults')}</p>}
+      {selected.payments.map(p => <article key={p.id} className="ledger-line"><div><h3>{clients.get(p.client_id)} · {entries.get(p.transaction_id ?? '')?.title ?? t('advance')}</h3><small>{p.payment_date} · {t(p.payment_method)}</small></div>
         <div className="ledger-amount"><strong className="money">{formatMoney(p.amount,p.currency,locale)}</strong><Remove owner={owner} kind="payment" id={p.id}/></div></article>)}
     </section>
+    <ExportTools data={data} filters={filters} today={today}/>
   </>;
 }
 

@@ -6,6 +6,7 @@ export type Client = Named & {email: string | null; phone: string | null};
 export type Account = Named & {client_id: string};
 export type Entry = {
   id: string; title: string; type: 'debt' | 'expense' | 'payment' | 'refund'; status: string;
+  category?: string;
   amount: string; currency: Currency; credit_card_id: string | null; client_id: string | null;
   client_account_id: string | null; card_rate: string | null; fx_offset: string;
   installment_count: number; installment_current: number; installment_group_id: string | null;
@@ -13,7 +14,13 @@ export type Entry = {
 };
 export type Payment = {id: string; amount: string; currency: Currency; client_id: string;
   client_account_id: string | null; transaction_id: string | null; payment_date: string; payment_method: string};
-export type Ledger = {base: Currency; defaults: boolean; cards: Card[]; clients: Client[]; accounts: Account[]; transactions: Entry[]; payments: Payment[]};
+export type Subscription = {
+  id: string; name: string; provider: string | null; amount: string; currency: Currency;
+  credit_card_id: string | null; billing_cycle: 'monthly' | 'yearly'; next_billing_date: string;
+  billing_anchor_day: number; billing_anchor_month: number; is_active: boolean;
+  category: 'entertainment' | 'productivity' | 'cloud' | 'other'; notes: string | null;
+};
+export type Ledger = {base: Currency; defaults: boolean; cards: Card[]; clients: Client[]; accounts: Account[]; transactions: Entry[]; payments: Payment[]; subscriptions: Subscription[]};
 
 export function balances(data: Ledger) {
   const cards = new Map<string, bigint>();

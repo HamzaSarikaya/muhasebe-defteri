@@ -1,6 +1,6 @@
 # Muhasebe
 
-Müşteri alacaklarını, kart harcamalarını ve tahsilatları takip etmek için Türkçe ve İngilizce bir web uygulaması. Her kurulum kendi Supabase projesine bağlanır. Yeni hesaplar boş açılır.
+Müşteri alacaklarını, kart harcamalarını, tahsilatları ve abonelikleri takip etmek için Türkçe ve İngilizce bir web uygulaması. Her kurulum kendi Supabase projesine bağlanır. Yeni hesaplar boş açılır.
 
 ## Kurulum
 
@@ -35,9 +35,21 @@ Para birimleri birbirine eklenmez. Grafik etiketleri ve tutarlar kuruş hassasiy
 
 Bağlantı ya da oturum yokken tutarlar `—`, bağlantılı boş hesaplarda sıfır görünür. Yeni kurulumda otomatik müşteri, kart veya işlem oluşturulmaz. Başlangıç kayıtları yalnızca kullanıcının seçimiyle eklenir.
 
-## 0.1.0 sürümünden yükseltme
+## Abonelikler ve dönem raporları
 
-`0.2.0` kaynaklarını indirin, mevcut `.env.local` dosyanızı koruyun ve `npm ci` çalıştırın. Ardından `npm run build` ve `npm start` ile yeniden başlatın. Bu sürüm yeni veritabanı migration'ı gerektirmez; `0.1.0` migration dosyalarını yeniden çalıştırmayın. Yeni kurulumlarda iki SQL dosyası yine numara sırasıyla uygulanmalıdır.
+- Abonelikler ekranında hizmet adı, sağlayıcı, ücret, para birimi, aylık/yıllık dönem, kart ve sonraki yenileme tarihi kaydedilir. Duraklatılan abonelikler toplamlardan çıkarılır; görünürlük seçeneğiyle yeniden düzenlenebilir, etkinleştirilebilir veya silinebilir.
+- Yıllık yük, aylık ücretlerin 12 katı ile yıllık ücretlerin toplamıdır. Aylık karşılık bu toplamın 12'ye bölünüp en yakın kuruşa yuvarlanmasıdır. Önce toplam alınır, yalnızca gösterimde yuvarlanır. TRY, USD ve EUR birbirine eklenmez. Bu değerler mevcut ücretlerin karşılığıdır; belirli bir ayda tahsil edilecek tutarın tahmini değildir.
+- Tarihi gelen abonelikte Düzenle → Sonraki döneme ilerlet, tarihi bir dönem taşır. 31 Ocak → 28 Şubat → 31 Mart ve yıllık 29 Şubat döngüsü korunur. Tarihi elle değiştirmek yenileme gününü yeniden belirler. Yinelenen ilerletme isteği tarihi ikinci kez taşımaz. Geçmiş dönemler tek tek ilerletilir. Abonelik takibi kendiliğinden finansal işlem veya ödeme oluşturmaz.
+- Raporlar ekranında kategori toplamları, iadeler, müşteri tahsilatları ve açık taksitlerin aylık takvimi bulunur. İlk görünüm bu ayın başından bugüne kadardır; Temizle tüm tarihleri açar. Kategori dökümü işlem tarihini, tahsilat ödeme tarihini, takvim vade tarihini kullanır. Taksitli alışverişin tüm satırları aynı alışveriş tarihini taşır; kategori analizi bu tarihte toplam alışverişi gösterir. İptaller analize dahil edilmez. Takvim, bugüne kadar kaydedilmiş tahsilatlar sonrası kalan tutarı gösterir; ileri tarihli tahsilatlar bugünkü kalanı azaltmaz.
+- İşlemler ve Raporlar ekranlarında açıklama, müşteri, alt hesap, kart veya kategori aranabilir. Tarih uçları dahildir. Geçersiz tarih aralığı açık hata gösterir ve CSV indirmeyi durdurur. Mobilde Raporlar üst çubuktaki grafik simgesinden veya Abonelikler ekranından açılır.
+- **Filtreli CSV** seçili işlem ve tahsilatları içerir; tutarlar gruplama işareti olmadan iki ondalık basamakla yazılır. Taksit grubu, bağlantılı işlem kimliği, kart kuru ve kuruş bazında kur ofseti ayrı sütunlardadır. UTF-8 BOM Türkçe karakterleri korur; formül başlatan metinler elektronik tablo çalıştırmasını engelleyecek biçimde kaçırılır.
+- **Tam yedek (JSON)** filtrelerden bağımsız tüm profil, kart, müşteri, alt hesap, işlem, tahsilat ve abonelik kayıtlarını içerir. Kimlikler, tarihler, notlar ve işlem anındaki kurlar korunur; büyük parasal sayılar ve kurlar metindir. Dosya sürümlüdür (`muhasebe-ledger`, sürüm 1); Auth parolası/oturumu veya ortak kur önbelleği içermez. İçe aktarma arayüzü bu fazın kapsamında değildir.
+
+Faz 4 yükseltmesi: üçüncü migration'ı uygulayın, `npm ci`, `npm run build` çalıştırın ve sunucuyu yeniden başlatın. Bağlantı anahtarları `.env.local` içinde korunur.
+
+## Önceki sürümlerden yükseltme
+
+`0.3.0` kaynaklarını indirin ve mevcut `.env.local` dosyanızı koruyun. `0.1.0` veya `0.2.0` kuruluysa yalnızca `supabase/migrations/202611050003_phase4.sql` dosyasını bir kez uygulayın. Ardından `npm ci`, `npm run build` ve `npm start` ile yeniden başlatın. Önceden uygulanmış migration dosyalarını yeniden çalıştırmayın. Yeni kurulumda üç SQL dosyasının tamamını numara sırasıyla uygulayın.
 
 ## Testler
 
@@ -51,6 +63,6 @@ npm run test:dashboard
 
 Standart tarayıcı testlerini bağlantı ayarları boşken çalıştırın. Oturum açmayı, taksitli harcamayı ve tahsilatı tarayıcıda denemek için ayrı bir yerel Supabase test projesi kullanın. Test projesinin bağlantı değişkenlerini ve `LEDGER_TEST_EMAIL`, `LEDGER_TEST_PASSWORD` değerlerini terminal ortamında tanımlayıp yeniden derleyin ve `npm run test:e2e` çalıştırın. Bu senaryo test hesabına kayıt yazar.
 
-`npm run test:dashboard`, ayrı bir derlemede yalnızca yerel ve salt okunur bir servis taklidi kullanır. Oturum gereksinimi, döviz seçimi, dolu ve boş hesaplar, hata durumları, müşteri detayları, çok büyük tutarlar, limit aşımı, mobil yerleşim ve erişilebilirlik sınanır. 3101 ve 54329 portları boş olmalıdır. Test kayıtları gerçek veritabanına yazılmaz ve normal uygulamada gösterilmez.
+`npm run test:dashboard`, ayrı bir derlemede yalnızca yerel bir servis taklidi kullanır. Oturum gereksinimi, döviz seçimi, dolu ve boş hesaplar, hata durumları, müşteri detayları, çok büyük tutarlar, limit aşımı, mobil yerleşim ve erişilebilirlik sınanır. 3101 ve 54329 portları boş olmalıdır. Abonelik ekleme, düzenleme, yenileme, duraklatma ve silme; işlem filtreleri ve gerçek CSV/JSON indirmeleri de sınanır. Test yazımları yalnızca bellekte tutulur. Test kayıtları gerçek veritabanına yazılmaz ve normal uygulamada gösterilmez.
 
 Birim testleri ve yerel servis taklidi gerçek Supabase kimlik doğrulaması, oturum yenilemesi veya canlı bulut bağlantısını doğrulamaz. Canlı servislerle çalışan mali kayıt senaryosu ayrıca kendi test projenizde çalıştırılmalıdır. Üretim service worker'ı yalnızca statik uygulama dosyalarını ve çevrimdışı bilgi sayfasını önbelleğe alır; finansal sayfalar ve oturum yanıtları önbelleğe alınmaz.

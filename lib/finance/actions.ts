@@ -4,6 +4,7 @@ import {revalidatePath} from 'next/cache';
 import {createClient} from '@/lib/supabase/server';
 import {currency, minor, rate} from './money';
 import {dateOnly, schedule, statementCycle} from './ledger';
+import {subscriptionValues} from './subscriptions';
 
 export type Result = 'saved' | 'invalid' | 'session' | 'conflict' | 'unavailable';
 export async function authenticate(signOut: boolean, data: FormData): Promise<Result> {
@@ -25,7 +26,20 @@ export async function saveRecord(owner: string, action: string, requestId: strin
   const check = (result: {error: {code?: string} | null}) => { if (result.error) throw result.error; };
   try {
     if (action === 'defaults') check(await db.rpc('install_ledger_defaults'));
-    else if (action === 'card' || action === 'client' || action === 'account') {
+    else if (action === 'subscription') {
+      const values = subscriptionValues(field);
+      if (values.credit_card_id) {
+        const card = await db.from('credit_cards').select('id').eq('user_id', owner).eq('id', values.credit_card_id).single();
+        check(card);
+      }
+      const table = db.from('subscriptions');
+      check(id ? await table.update(values).eq('user_id', owner).eq('id', id).select('id').single()
+        : await table.insert({...values, user_id: owner, id: requestId}));
+    } else if (action === 'subscriptionRenew') {
+      const result = await db.rpc('advance_subscription', {subscription_id: id, expected_date: dateOnly(field('expectedDate'))});
+      check(result);
+      if (!result.data) return 'conflict';
+    } else if (action === 'card' || action === 'client' || action === 'account') {
       const name = field('name');
       if (!name || name.length > 120) return 'invalid';
       let values: Record<string, unknown> = {name};
@@ -38,7 +52,7 @@ export async function saveRecord(owner: string, action: string, requestId: strin
       check(id ? await table.update(values).eq('user_id',owner).eq('id',id).select('id').single()
         : await table.insert({...values, user_id: owner, id: requestId}));
     } else if (action === 'remove') {
-      const table = {card:'credit_cards', client:'clients', account:'client_accounts', payment:'payments'}[field('kind')];
+      const table = {card:'credit_cards', client:'clients', account:'client_accounts', payment:'payments', subscription:'subscriptions'}[field('kind')];
       if (!table) return 'invalid';
       check(await db.from(table).delete().eq('user_id',owner).eq('id',id).select('id').single());
     } else if (action === 'entry') {
