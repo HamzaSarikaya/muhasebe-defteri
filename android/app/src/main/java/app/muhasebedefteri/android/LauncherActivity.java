@@ -1,11 +1,20 @@
 package app.muhasebedefteri.android;
 
 import android.net.Uri;
+import android.os.Bundle;
+import androidx.core.splashscreen.SplashScreen;
 
 /** Opens only the production workspace; external intents cannot replace the trusted origin. */
 public final class LauncherActivity extends com.google.androidbrowserhelper.trusted.LauncherActivity {
     static final String HOST = "muhasebe-defteri.vercel.app";
     static final String START_URL = "https://" + HOST + "/";
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        // The system screen hands off to the same branding while the browser prepares the page.
+        SplashScreen.installSplashScreen(this);
+        super.onCreate(savedInstanceState);
+    }
 
     static boolean isWorkspaceUrl(Uri uri) {
         return uri != null

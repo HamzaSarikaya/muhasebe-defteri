@@ -55,7 +55,7 @@ Faz 4 yükseltmesi: üçüncü migration'ı uygulayın, `npm ci`, `npm run build
 
 ## Önceki sürümlerden yükseltme
 
-`0.4.2` kaynaklarını indirin ve mevcut `.env.local` dosyanızı koruyun. `0.1.0` veya `0.2.0` kuruluysa önce `supabase/migrations/202611050003_phase4.sql`, ardından `202611050004_access_defaults.sql` dosyasını birer kez uygulayın. `0.3.0` kuruluysa yalnızca dördüncü migration gerekir. Ardından `npm ci`, `npm run build` ve `npm start` ile yeniden başlatın. `0.4.0` veya `0.4.1` üzerinden bu sürüme geçişte yeni migration gerekmez. Önceden uygulanmış migration dosyalarını yeniden çalıştırmayın. Yeni kurulumda dört SQL dosyasının tamamını numara sırasıyla uygulayın.
+`0.4.3` kaynaklarını indirin ve mevcut `.env.local` dosyanızı koruyun. `0.1.0` veya `0.2.0` kuruluysa önce `supabase/migrations/202611050003_phase4.sql`, ardından `202611050004_access_defaults.sql` dosyasını birer kez uygulayın. `0.3.0` kuruluysa yalnızca dördüncü migration gerekir. Ardından `npm ci`, `npm run build` ve `npm start` ile yeniden başlatın. `0.4.0` veya `0.4.1` üzerinden bu sürüme geçişte yeni migration gerekmez. Önceden uygulanmış migration dosyalarını yeniden çalıştırmayın. Yeni kurulumda dört SQL dosyasının tamamını numara sırasıyla uygulayın.
 
 ## Mobil kullanım ve PWA
 
@@ -70,6 +70,12 @@ Service worker yalnızca statik dosyaları ve çevrimdışı bilgi sayfasını �
 [DEPLOY.md](DEPLOY.md), Supabase kurulumu, Vercel ortam değişkenleri, ücretsiz plan sınırları, üretim kontrolleri ve geri dönüş adımlarını açıklar. Vercel `vercel.json` içindeki `npm run build:deploy` komutunu kullanır; eksik bağlantı ayarları, yerel sunucu, test modu veya açık kullanıcı kaydı varsa derleme durur. Normal `npm run build`, bağlantısız yerel inceleme için çalışır.
 
 Dördüncü migration, gelecekteki tablo ve fonksiyonların varsayılan erişimini kapatır. Yeni nesneler ancak kendi migration’larında açıkça izin verilirse API üzerinden kullanılabilir. Mevcut kayıtlar ve açıkça verilmiş uygulama izinleri korunur.
+
+## Android uygulaması
+
+[İmzalı APK 0.4.3](https://github.com/HamzaSarikaya/muhasebe-defteri/releases/download/v0.4.3/Muhasebe-0.4.3.apk) Android 7.0 ve üzerinde kurulabilir. Önceki APK kaldırılmadan güncellenir. Bu sürüm gri zeminli Muhasebe açılış ekranını ekler.
+
+Uygulama, Chrome veya uyumlu bir tarayıcının Trusted Web Activity altyapısıyla tam ekran çalışır; tarayıcı altyapısı ve internet bağlantısı gerekir. [Android kaynakları ve derleme](android/README.md).
 
 ## Testler
 

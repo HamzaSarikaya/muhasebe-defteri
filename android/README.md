@@ -2,6 +2,12 @@
 
 Canlı Muhasebe çalışma alanını Google Android Browser Helper üzerinden açan, imzalı APK projesi. Android 7.0 veya üzeri ve güncel bir Trusted Web Activity destekli tarayıcı gerekir. Kayıt işlemleri internet bağlantısı kullanır. Tarayıcı altyapısı oturumu, erişilebilirliği, dosya indirmelerini ve geri gezinmeyi yönetir.
 
+## Açılış ekranı
+
+Soğuk açılışta Android'in sistem ekranından gri zemindeki Muhasebe logosuna geçilir. Aynı görsel, tarayıcı hazırlanırken ve ilk sayfa yüklenirken gösterilir; içerik hazır olduğunda kalkar. Sabit bir bekleme süresi veya ilerleme yüzdesi eklenmez. Özel animasyon yoktur; Android'in sistem hareket tercihleri korunur.
+
+Ekran, AndroidX SplashScreen ve Android Browser Helper'ın splash desteğini kullanır. FileProvider yalnızca `twa_splash/` altındaki açılış görselini tarayıcıyla paylaşır.
+
 ## Derleme
 
 JDK 17 veya üzeri, Gradle 8.13 ve Android SDK 36 gerekir. `ANDROID_HOME` SDK dizinini göstermelidir.
