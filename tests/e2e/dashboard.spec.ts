@@ -47,6 +47,29 @@ test('navigation streams the destination skeleton and respects reduced motion', 
   await expect(page).toHaveURL('/tr/transactions');
 });
 
+test('phone loading cards reserve the same height as the loaded summaries', async ({page, context, isMobile}) => {
+  test.skip(!isMobile, 'This checks the phone layout in portrait and landscape.');
+  await session(context, owner.slice(0, -3) + '005');
+  for (const [width, height] of [[320, 640], [390, 844], [430, 932], [844, 390]]) {
+    await page.setViewportSize({width, height});
+    await page.goto('/tr/settings');
+    await page.locator('.mobile-nav a[href="/tr"]').click();
+    const placeholders = page.locator('.route-loading:visible .skeleton-summary');
+    await expect(placeholders).toHaveCount(3);
+    let pendingHeights: number[] = [];
+    await expect.poll(async () => {
+      pendingHeights = await page.evaluate(() => Array.from(document.querySelectorAll('.route-loading .skeleton-summary')).filter(card => getComputedStyle(card).visibility !== 'hidden').map(card => card.getBoundingClientRect().height));
+      return pendingHeights.length === 3 && pendingHeights.every(height => height > 0);
+    }).toBe(true);
+    if (width === 390) await page.screenshot({path: test.info().outputPath('phone-loading-390.png')});
+    await expect(page.locator('.route-loading')).toHaveCount(0);
+    const loadedHeights = await page.locator('.summary-item').evaluateAll(cards => cards.map(card => card.getBoundingClientRect().height));
+    expect(loadedHeights).toHaveLength(3);
+    for (let index = 0; index < 3; index++) expect(Math.abs(pendingHeights[index] - loadedHeights[index]), `${width}px, card ${index}`).toBeLessThanOrEqual(8);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  }
+});
+
 test('signed-out dashboard protects financial values and offers sign in', async ({page}) => {
   await page.goto('/tr');
   await expect(page.getByLabel('E-posta', {exact: true})).toBeVisible();

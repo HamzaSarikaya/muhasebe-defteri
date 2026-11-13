@@ -4,7 +4,7 @@ Android 7.0 veya üzeri için, canlı Muhasebe arayüzünü uygulamanın kendi W
 
 ## Açılış ve kullanım
 
-Güncel yükleme paketi APK 0.4.6'dır. Canlı web arayüzü [0.4.7](https://github.com/HamzaSarikaya/muhasebe-defteri/releases/latest) sürümündedir; mevcut APK bu güncel arayüzü açar. Yalnızca web arayüzü değiştiğinde APK sürüm numarası değişmez ve yeniden kurulum gerekmez.
+Güncel yükleme paketi APK 0.4.6'dır. Canlı web arayüzü [0.4.8](https://github.com/HamzaSarikaya/muhasebe-defteri/releases/latest) sürümündedir; mevcut APK bu güncel arayüzü açar. Yalnızca web arayüzü değiştiğinde APK sürüm numarası değişmez ve yeniden kurulum gerekmez.
 
 Sistem logosu, gri zeminli uygulama ekranına geçer. Logo ve içerik aynı pencerededir; ilk web görüntüsü çizilince logo kalkar. Sabit bekleme süresi yoktur. Bağlantı hatasında Yeniden dene gösterilir. Geri tuşu sayfa geçmişinde ilerler; ilk sayfada uygulamayı kapatır. Klavye ve sistem çubuklarının boşlukları korunur.
 

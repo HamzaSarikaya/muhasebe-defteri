@@ -537,9 +537,13 @@ button { cursor: pointer; }
   .skeleton::after { animation: skeleton-sweep 1.6s linear infinite; }
 }
 @keyframes skeleton-sweep { to { transform: translateX(100%); } }
-@media (max-width: 767px) {
+@media (max-width: 767px), (max-height: 500px) and (pointer: coarse) {
   .skeleton-layout { gap: 20px; }
   .skeleton-summary, .skeleton-list, .skeleton-record, .skeleton-chart { padding: 20px; }
+  .skeleton-summary { grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); align-items: center; gap: 8px 12px; }
+  .skeleton-summary > .skeleton-short { width: 85%; }
+  .skeleton-summary > .skeleton-amount { width: 85%; height: 33px; margin-left: auto; }
+  .skeleton-summary > .skeleton-line { grid-column: 1 / -1; height: 20px; }
   .skeleton-record-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
   .skeleton-row { gap: 16px; }
 }
