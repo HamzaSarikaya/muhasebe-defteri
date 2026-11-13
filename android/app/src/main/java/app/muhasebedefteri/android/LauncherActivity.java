@@ -69,7 +69,7 @@ public final class LauncherActivity extends ComponentActivity {
         if (Build.VERSION.SDK_INT >= 29) root.setForceDarkAllowed(false);
         root.setOnApplyWindowInsetsListener((view, insets) -> {
             if (Build.VERSION.SDK_INT >= 30) {
-                android.graphics.Insets bars = insets.getInsets(WindowInsets.Type.systemBars() | WindowInsets.Type.ime());
+                android.graphics.Insets bars = insets.getInsets(WindowInsets.Type.systemBars() | WindowInsets.Type.displayCutout() | WindowInsets.Type.ime());
                 view.setPadding(bars.left, bars.top, bars.right, bars.bottom);
             } else {
                 view.setPadding(insets.getSystemWindowInsetLeft(), insets.getSystemWindowInsetTop(),
@@ -149,11 +149,16 @@ public final class LauncherActivity extends ComponentActivity {
             }
             @Override public void onPageCommitVisible(WebView view, String url) {
                 if (failed || !isWorkspaceUrl(Uri.parse(url))) return;
-                // Wait for the compositor, not a timer or the network's last response.
-                view.postVisualStateCallback(0, new WebView.VisualStateCallback() {
-                    @Override public void onComplete(long requestId) {
-                        if (!failed && !isDestroyed()) cover.setVisibility(View.GONE);
-                    }
+                // Native padding already reserves bars, cutouts and the keyboard.
+                // Clear the web safe areas before revealing the first frame to avoid double insets.
+                view.evaluateJavascript("(function(){var s=document.documentElement.style;"
+                    + "['top','right','bottom','left'].forEach(function(edge){s.setProperty('--safe-'+edge,'0px');});})()", ignored -> {
+                    if (failed || isDestroyed() || webView != view) return;
+                    view.postVisualStateCallback(0, new WebView.VisualStateCallback() {
+                        @Override public void onComplete(long requestId) {
+                            if (!failed && !isDestroyed()) cover.setVisibility(View.GONE);
+                        }
+                    });
                 });
             }
             @Override public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
