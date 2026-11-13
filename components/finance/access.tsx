@@ -1,6 +1,6 @@
 import {Database, LockKeyhole} from 'lucide-react';
 import {getTranslations} from 'next-intl/server';
-import {Link} from '@/i18n/navigation';
+import {Link} from '@/components/layout/pending-link';
 import {Field, RecordForm} from './forms';
 
 export async function LedgerAccess({state}: {state: 'setup' | 'login'}) {

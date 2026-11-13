@@ -17,5 +17,5 @@ async function Records({module}: {module: 'subscriptions' | 'reports'}) {
 
 export async function PhaseFourPage({module}: {module: 'subscriptions' | 'reports'}) {
   const t = await getTranslations('Modules.' + module);
-  return <><PageHeading title={t('title')} description={t('description')}/><Suspense fallback={<PageLoading view={module}/>}><Records module={module}/></Suspense></>;
+  return <><PageHeading title={t('title')} description={t('description')}/>{module === 'reports' ? <Suspense fallback={<PageLoading view="reports"/>}><Records module={module}/></Suspense> : <Records module={module}/>}</>;
 }

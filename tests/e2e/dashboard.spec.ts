@@ -14,7 +14,8 @@ test('slow pages show stable skeleton surfaces until private data arrives', asyn
   const errors: string[] = [];
   page.on('pageerror', error => errors.push(error.message));
   for (const route of ['/tr', '/tr/cards', '/tr/clients', '/tr/transactions', '/tr/subscriptions', '/tr/reports']) {
-    await page.goto(route, {waitUntil: 'commit'});
+    await page.goto('/tr/settings');
+    await page.locator(`a[href="${route}"]:visible, a[href="${route}/"]:visible`).first().click();
     const loading = page.locator('.route-loading:visible');
     await expect(loading).toHaveCount(1);
     await expect(loading).toHaveAttribute('aria-busy', 'true');
@@ -29,18 +30,21 @@ test('slow pages show stable skeleton surfaces until private data arrives', asyn
 test('navigation streams the destination skeleton and respects reduced motion', async ({page, context}) => {
   await session(context, owner.slice(0, -3) + '005');
   await page.emulateMedia({reducedMotion: 'reduce'});
-  await page.goto('/tr/settings');
+  await page.goto('/tr/transactions');
+  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
   const link = page.locator('nav:visible').getByRole('link', {name: 'Kartlar', exact: true}).first();
   await link.click();
   const loading = page.locator('.route-loading:visible');
   await expect(loading).toHaveCount(1);
   await expect(loading).toHaveClass(/skeleton-view-cards/);
+  await expect(page.locator('.page-records')).toBeHidden();
+  expect(await loading.evaluate(element => {const box = element.getBoundingClientRect(); return box.bottom > 0 && box.top < innerHeight;})).toBe(true);
   await expect.poll(() => loading.locator('.skeleton').first().evaluate(element => getComputedStyle(element, '::after').animationName)).toBe('none');
   await expect(page.locator('.route-loading')).toHaveCount(0);
   await expect(page.getByRole('heading', {name: 'Kart 01', exact: true})).toBeVisible();
   await expect(page.locator('.navigation-pending')).toHaveCount(0);
   await page.goBack();
-  await expect(page).toHaveURL('/tr/settings');
+  await expect(page).toHaveURL('/tr/transactions');
 });
 
 test('signed-out dashboard protects financial values and offers sign in', async ({page}) => {

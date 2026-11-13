@@ -544,7 +544,11 @@ button { cursor: pointer; }
   .skeleton-row { gap: 16px; }
 }
 
-.navigation-pending { position: fixed; z-index: 60; top: calc(76px + var(--safe-top)); right: calc(24px + var(--safe-right)); padding: 8px 14px; border: 1px solid var(--color-border); border-radius: 20px; background: var(--color-surface); color: var(--color-secondary); font-size: 12px; pointer-events: none; }
+.page-content { position: relative; min-width: 0; }
+.navigation-skeleton { position: absolute; z-index: 10; inset: 0; min-height: 100%; background: var(--color-canvas); }
+.navigation-skeleton > .route-loading { position: sticky; top: 16px; }
+/* Retain geometry while keeping the previous page out of focus and hit testing. */
+.page-content:has(> .navigation-skeleton) > .page-records { visibility: hidden; }
 
 .page-controls {display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap;padding:20px 0 4px;color:var(--color-secondary);font-size:13px;}
 .page-controls button {min-height:44px;}

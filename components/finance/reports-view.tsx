@@ -3,7 +3,7 @@
 import {useDeferredValue, useMemo, useState} from 'react';
 import {CalendarDays, ChartNoAxesCombined} from 'lucide-react';
 import {useTranslations} from 'next-intl';
-import {Link} from '@/i18n/navigation';
+import {Link} from '@/components/layout/pending-link';
 import type {Ledger} from '@/lib/finance/ledger';
 import {currencies, formatMoney, type Currency} from '@/lib/finance/money';
 import {percentage} from '@/lib/finance/analytics';

@@ -2,7 +2,7 @@ import {Suspense} from 'react';
 import {PageLoading} from '@/components/layout/page-loading';
 import {getLocale, getTranslations} from 'next-intl/server';
 import {Plus} from 'lucide-react';
-import {Link} from '@/i18n/navigation';
+import {Link} from '@/components/layout/pending-link';
 import {PageHeading} from '@/components/shared/page-heading';
 import {DashboardView} from '@/components/dashboard/dashboard-view';
 import {LedgerAccess} from '@/components/finance/access';

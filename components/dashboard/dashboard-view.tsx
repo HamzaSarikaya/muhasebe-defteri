@@ -4,7 +4,7 @@ import {useState} from 'react';
 import dynamic from 'next/dynamic';
 import {ArrowDownLeft, CalendarDays, ChevronRight, CreditCard, ReceiptText, Wallet} from 'lucide-react';
 import {useTranslations} from 'next-intl';
-import {Link} from '@/i18n/navigation';
+import {Link} from '@/components/layout/pending-link';
 import type {dashboard} from '@/lib/finance/analytics';
 import {formatMoney, type Currency} from '@/lib/finance/money';
 import {ChartLoading} from '@/components/layout/page-loading';

@@ -3,7 +3,7 @@
 import {useState} from 'react';
 import {CalendarDays, ChevronRight, Plus, Repeat2} from 'lucide-react';
 import {useTranslations} from 'next-intl';
-import {Link} from '@/i18n/navigation';
+import {Link} from '@/components/layout/pending-link';
 import type {Ledger, Subscription} from '@/lib/finance/ledger';
 import {currencies, decimalAmount, formatMoney, type Currency} from '@/lib/finance/money';
 import {subscriptionLoad} from '@/lib/finance/subscriptions';

@@ -1,7 +1,7 @@
 import {notFound} from 'next/navigation';
 import {getLocale, getTranslations} from 'next-intl/server';
 import {ChevronLeft, Mail, Phone} from 'lucide-react';
-import {Link} from '@/i18n/navigation';
+import {Link} from '@/components/layout/pending-link';
 import {LedgerAccess} from '@/components/finance/access';
 import {PageHeading} from '@/components/shared/page-heading';
 import {readLedger} from '@/lib/finance/read';
