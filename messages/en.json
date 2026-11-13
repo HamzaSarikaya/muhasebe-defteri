@@ -79,6 +79,7 @@
     "offline": "No internet connection. Your form is kept on this screen; reconnect and try again."
   },
   "Common": {
+    "loading": "Loading…",
     "appName": "Muhasebe",
     "workspace": "Personal workspace",
     "skipToContent": "Skip to content",

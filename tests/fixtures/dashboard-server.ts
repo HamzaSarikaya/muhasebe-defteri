@@ -53,6 +53,7 @@ const backend = createServer(async (request, response) => {
   if (request.url === '/auth/v1/user') {
     response.end(JSON.stringify({id, aud: 'authenticated', role: 'authenticated', app_metadata: {}, user_metadata: {}, created_at: '2026-01-01T00:00:00Z'}));
   } else if (request.url === '/rest/v1/rpc/ledger_snapshot') {
+    if (id.endsWith('005')) await new Promise(resolve => setTimeout(resolve, 1500));
     if (id.endsWith('003')) {response.statusCode = 503; response.end(JSON.stringify({message: 'Fixture unavailable'})); return;}
     const ledger = id.endsWith('002') ? {...sampleLedger, clients: [], accounts: [], cards: [], transactions: [], payments: [], subscriptions: []}
       : id.endsWith('004') ? {...sampleLedger, transactions: sampleLedger.transactions.map((row, index) => index === 0 ? {...row, amount: '9223372036854775807'} : row)} : ledgerForUser();

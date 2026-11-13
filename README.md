@@ -4,7 +4,7 @@ Müşteri alacaklarını, kart harcamalarını, tahsilatları ve abonelikleri ta
 
 ## Android uygulaması
 
-Android 7.0 ve üzeri için imzalı [APK 0.4.3 dosyasını](https://github.com/HamzaSarikaya/muhasebe-defteri/releases/download/v0.4.3/Muhasebe-0.4.3.apk) indirin. Telefonda dosyayı açıp yükleyin; istenirse indirdiğiniz tarayıcıya kurulum izni verin. Mevcut hesabınızla giriş yapın. Uygulama internet bağlantısı ve güncel Chrome veya Trusted Web Activity destekleyen uyumlu bir tarayıcı kullanır. 0.4.3 sürümü gri zeminli Muhasebe açılış ekranını ekler; önceki APK kaldırılmadan güncellenebilir.
+Android 7.0 ve üzeri için imzalı [APK 0.4.4 dosyasını](https://github.com/HamzaSarikaya/muhasebe-defteri/releases/download/v0.4.4/Muhasebe-0.4.4.apk) indirin ve açın. Mevcut uygulamayı kaldırmadan güncelleyebilirsiniz. Bu sürüm, Chrome açılışına geçmek yerine uygulamanın kendi WebView penceresini kullanır. Logo ilk içerik çizilene kadar kalır. Güncel Android System WebView ve internet bağlantısı gerekir. Önceki tarayıcı oturumu aktarılmadığından ilk güncellemede bir kez yeniden giriş yapılır; mali kayıtlar sunucuda korunur.
 
 APK'nın kaynağı ve yeniden derleme adımları [android/README.md](android/README.md) içindedir. İmza anahtarları depoya dahil değildir. Kaynaklardan kendi anahtarınızla derlediğiniz paketin site doğrulaması için `public/.well-known/assetlinks.json` dosyasını kendi sertifikanızla güncelleyin.
 
@@ -55,7 +55,7 @@ Faz 4 yükseltmesi: üçüncü migration'ı uygulayın, `npm ci`, `npm run build
 
 ## Önceki sürümlerden yükseltme
 
-`0.4.3` kaynaklarını indirin ve mevcut `.env.local` dosyanızı koruyun. `0.1.0` veya `0.2.0` kuruluysa önce `supabase/migrations/202611050003_phase4.sql`, ardından `202611050004_access_defaults.sql` dosyasını birer kez uygulayın. `0.3.0` kuruluysa yalnızca dördüncü migration gerekir. Ardından `npm ci`, `npm run build` ve `npm start` ile yeniden başlatın. `0.4.0`, `0.4.1` veya `0.4.2` üzerinden bu sürüme geçişte yeni migration gerekmez. Önceden uygulanmış migration dosyalarını yeniden çalıştırmayın. Yeni kurulumda dört SQL dosyasının tamamını numara sırasıyla uygulayın.
+`0.4.4` kaynaklarını indirin ve mevcut `.env.local` dosyanızı koruyun. `0.1.0` veya `0.2.0` kuruluysa önce `supabase/migrations/202611050003_phase4.sql`, ardından `202611050004_access_defaults.sql` dosyasını birer kez uygulayın. `0.3.0` kuruluysa yalnızca dördüncü migration gerekir. Ardından `npm ci`, `npm run build` ve `npm start` ile yeniden başlatın. `0.4.0`, `0.4.1` veya `0.4.2` üzerinden bu sürüme geçişte yeni migration gerekmez. Önceden uygulanmış migration dosyalarını yeniden çalıştırmayın. Yeni kurulumda dört SQL dosyasının tamamını numara sırasıyla uygulayın.
 
 ## Mobil kullanım ve PWA
 

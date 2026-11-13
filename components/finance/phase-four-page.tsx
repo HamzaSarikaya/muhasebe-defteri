@@ -1,3 +1,5 @@
+import {Suspense} from 'react';
+import {PageLoading} from '@/components/layout/page-loading';
 import {getLocale, getTranslations} from 'next-intl/server';
 import {PageHeading} from '@/components/shared/page-heading';
 import {readLedger} from '@/lib/finance/read';
@@ -6,10 +8,14 @@ import {LedgerAccess} from './access';
 import {ReportsView} from './reports-view';
 import {SubscriptionsView} from './subscriptions-view';
 
-export async function PhaseFourPage({module}: {module: 'subscriptions' | 'reports'}) {
-  const t = await getTranslations('Modules.' + module);
+async function Records({module}: {module: 'subscriptions' | 'reports'}) {
   const locale = await getLocale();
   const result = await readLedger();
-  return <><PageHeading title={t('title')} description={t('description')}/>{result.state !== 'ready' ? <LedgerAccess state={result.state}/> : module === 'subscriptions' ?
+  return <>{result.state !== 'ready' ? <LedgerAccess state={result.state}/> : module === 'subscriptions' ?
     <SubscriptionsView data={result.data} owner={result.owner} locale={locale} today={istanbulToday()}/> : <ReportsView data={result.data} locale={locale} today={istanbulToday()}/>}</>;
+}
+
+export async function PhaseFourPage({module}: {module: 'subscriptions' | 'reports'}) {
+  const t = await getTranslations('Modules.' + module);
+  return <><PageHeading title={t('title')} description={t('description')}/>{module === 'reports' ? <Suspense fallback={<PageLoading/>}><Records module={module}/></Suspense> : <Records module={module}/>}</>;
 }

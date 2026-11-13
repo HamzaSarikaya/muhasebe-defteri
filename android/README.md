@@ -1,32 +1,19 @@
 # Muhasebe Android
 
-Canlı Muhasebe çalışma alanını Google Android Browser Helper üzerinden açan, imzalı APK projesi. Android 7.0 veya üzeri ve güncel bir Trusted Web Activity destekli tarayıcı gerekir. Kayıt işlemleri internet bağlantısı kullanır. Tarayıcı altyapısı oturumu, erişilebilirliği, dosya indirmelerini ve geri gezinmeyi yönetir.
+Android 7.0 veya üzeri için, canlı Muhasebe arayüzünü uygulamanın kendi WebView penceresinde açan imzalı APK. Güncel Android System WebView ve internet bağlantısı gerekir. Chrome uygulamasını başlatmaz.
 
-## Açılış ekranı
+## Açılış ve kullanım
 
-Soğuk açılışta Android'in sistem ekranından gri zemindeki Muhasebe logosuna geçilir. Aynı görsel, tarayıcı hazırlanırken ve ilk sayfa yüklenirken gösterilir; içerik hazır olduğunda kalkar. Sabit bir bekleme süresi veya ilerleme yüzdesi eklenmez. Özel animasyon yoktur; Android'in sistem hareket tercihleri korunur.
+Sistem logosu, gri zeminli uygulama ekranına geçer. Logo ve içerik aynı pencerededir; ilk web görüntüsü çizilince logo kalkar. Sabit bekleme süresi yoktur. Bağlantı hatasında Yeniden dene gösterilir. Geri tuşu sayfa geçmişinde ilerler; ilk sayfada uygulamayı kapatır. Klavye ve sistem çubuklarının boşlukları korunur.
 
-Ekran, AndroidX SplashScreen ve Android Browser Helper'ın splash desteğini kullanır. FileProvider yalnızca `twa_splash/` altındaki açılış görselini tarayıcıyla paylaşır.
+0.4.3 ve önceki sürümlerin Chrome oturumu bu uygulamaya aktarılmaz. 0.4.4 kurulumundan sonra bir kez yeniden giriş gerekir; sunucudaki mali kayıtlar korunur. Sonraki açılışlar uygulamanın kendi oturum çerezlerini kullanır.
+
+## Dosyalar ve bağlantılar
+
+CSV ve JSON dışa aktarma Android dosya kaydetme penceresini açar. Yerel köprü yalnızca üretim HTTPS adresinin ana çerçevesine açıktır; dosya türü, adı ve boyutu doğrulanır. Dosya sistemi erişimi ve karma HTTP içerik kapalıdır. Başka sitelerin kullanıcı tarafından açılan HTTPS bağlantıları varsayılan uygulamaya yönlendirilir.
 
 ## Derleme
 
-JDK 17 veya üzeri, Gradle 8.13 ve Android SDK 36 gerekir. `ANDROID_HOME` SDK dizinini göstermelidir.
+JDK 17+, Gradle 8.13 ve Android SDK 36 gerekir. ANDROID_HOME SDK dizinini göstermelidir. İmzalı sürüm için kendi anahtarınızla MUHASEBE_SIGNING_STORE, MUHASEBE_SIGNING_STORE_PASSWORD, MUHASEBE_SIGNING_KEY_ALIAS ve MUHASEBE_SIGNING_KEY_PASSWORD ortam değişkenlerini tanımlayın. İmza anahtarını ve parolaları depoya eklemeyin; güncellemelerde aynı anahtar gerekir.
 
-İmzalı sürüm için şu ortam değişkenlerini kendi imza anahtarınızla tanımlayın:
-
-- `MUHASEBE_SIGNING_STORE`: keystore dosyası
-- `MUHASEBE_SIGNING_STORE_PASSWORD`
-- `MUHASEBE_SIGNING_KEY_ALIAS`
-- `MUHASEBE_SIGNING_KEY_PASSWORD`
-
-Bu dizinde `gradle assembleRelease lintRelease` çalıştırın. APK `app/build/outputs/apk/release/app-release.apk` altında oluşur. İmza anahtarını ve parolaları kaynak koduna eklemeyin; ileride aynı uygulamayı güncellemek için aynı anahtar gereklidir.
-
-## Site doğrulaması
-
-Tam ekran açılış için üretim sitesinin `/.well-known/assetlinks.json` dosyası bu paketin (`app.muhasebedefteri.android`) imza sertifikasını doğrulamalıdır. İmza değişirse dosyayı yeni SHA-256 sertifika parmak iziyle güncelleyin. Doğrulama olmadan tarayıcı adres çubuğu görünür.
-
-## Kontrol
-
-Bir Android cihazı veya emülatör bağlıyken `gradle connectedDebugAndroidTest` güvenilen adres sınırını denetler. APK imzasını Android SDK `apksigner verify --verbose --print-certs` komutuyla ayrıca doğrulayın.
-
-Altyapı: [Android Browser Helper](https://github.com/GoogleChrome/android-browser-helper), Apache 2.0.
+Bu dizinde `gradle assembleRelease lintRelease` çalıştırın. APK `app/build/outputs/apk/release/app-release.apk` altında oluşur. Cihaz testleri için `gradle connectedDebugAndroidTest` kullanın. İmzayı Android SDK `apksigner verify --verbose --print-certs` komutuyla doğrulayın.

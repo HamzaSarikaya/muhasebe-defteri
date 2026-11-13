@@ -79,6 +79,7 @@
     "offline": "İnternet bağlantısı yok. Formunuz bu ekranda korunuyor; bağlandıktan sonra yeniden deneyin."
   },
   "Common": {
+    "loading": "Yükleniyor…",
     "appName": "Muhasebe",
     "workspace": "Kişisel çalışma alanı",
     "skipToContent": "İçeriğe geç",

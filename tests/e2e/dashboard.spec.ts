@@ -105,3 +105,34 @@ test('large exact balances fit narrow screens and over-limit cards remain explic
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   }
 });
+
+
+test('slow financial responses stream loading feedback while navigation stays usable', async ({page, context, isMobile}) => {
+  await session(context, owner.slice(0, -3) + '005');
+  const started = Date.now();
+  await page.goto('/tr/reports', {waitUntil: 'commit'});
+  await expect(page.getByRole('status').filter({hasText: 'Yükleniyor…'})).toBeVisible({timeout: 1200});
+  expect(Date.now() - started).toBeLessThan(1500);
+  await expect(page.getByRole('navigation').first()).toBeVisible();
+  await expect(page.getByRole('button', {name: /JSON/})).toBeVisible();
+  await expect(page.locator('.route-loading')).toHaveCount(0);
+  const nav = page.getByRole('navigation', {name: isMobile ? 'Mobil gezinme' : 'Ana gezinme', exact: true});
+  await nav.getByRole('link', {name: 'Kartlar', exact: true}).click({noWaitAfter: true});
+  await expect(page.getByRole('status').filter({hasText: 'Yükleniyor…'})).toBeVisible({timeout: 1200});
+  await expect(page.getByRole('heading', {name: 'Kart 01', exact: true})).toBeVisible();
+  await expect(page.locator('.navigation-pending')).toHaveCount(0);
+});
+
+test('native export sends an exact JSON backup to the system file chooser bridge', async ({page, context}) => {
+  await session(context);
+  await page.addInitScript(() => {
+    const state = window as Window & {MuhasebeFiles?: {postMessage: (data: string) => void}; nativeExport?: string};
+    state.MuhasebeFiles = {postMessage: data => {state.nativeExport = data;}};
+  });
+  await page.goto('/tr/reports');
+  await page.getByRole('button', {name: /JSON/}).click();
+  const file = await page.evaluate(() => JSON.parse((window as Window & {nativeExport?: string}).nativeExport!));
+  expect(file.name).toMatch(/^muhasebe-backup-.*\.json$/);
+  expect(file.type).toBe('application/json');
+  expect(JSON.parse(file.content).format).toBe('muhasebe-ledger');
+});

@@ -49,6 +49,8 @@ test('touch controls, landscape navigation and safe area clearances remain usabl
     for (const route of ['', '/cards', '/clients', '/transactions', '/subscriptions', '/reports', '/settings']) {
       await page.goto('/tr' + route);
       await expect(page.locator('h1')).toBeVisible();
+      // Streaming deliberately makes the heading available before financial content.
+      await expect(page.locator('.route-loading')).toHaveCount(0);
       await expect(page.locator('.mobile-nav')).toBeVisible();
       // Simulate nonzero platform insets; emulators do not expose a physical notch.
       await page.addStyleTag({content: ':root { --safe-top: 24px; --safe-right: 16px; --safe-bottom: 34px; --safe-left: 16px; }'});

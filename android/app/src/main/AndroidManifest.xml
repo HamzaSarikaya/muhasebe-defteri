@@ -9,19 +9,8 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/Theme.Muhasebe.Launcher">
-        <meta-data android:name="asset_statements" android:resource="@string/asset_statements" />
-        <meta-data android:name="web_manifest_url" android:value="https://muhasebe-defteri.vercel.app/manifest.webmanifest" />
-        <activity android:name=".LauncherActivity" android:exported="true" android:alwaysRetainTaskState="true"
-            android:theme="@style/Theme.Muhasebe.Starting">
-            <meta-data android:name="android.support.customtabs.trusted.DEFAULT_URL" android:value="@string/launch_url" />
-            <meta-data android:name="android.support.customtabs.trusted.STATUS_BAR_COLOR" android:resource="@color/canvas" />
-            <meta-data android:name="android.support.customtabs.trusted.NAVIGATION_BAR_COLOR" android:resource="@color/canvas" />
-            <meta-data android:name="android.support.customtabs.trusted.FALLBACK_STRATEGY" android:value="customtabs" />
-            <meta-data android:name="android.support.customtabs.trusted.SPLASH_IMAGE_DRAWABLE" android:resource="@drawable/splash_logo" />
-            <meta-data android:name="android.support.customtabs.trusted.SPLASH_SCREEN_BACKGROUND_COLOR" android:resource="@color/canvas" />
-            <meta-data android:name="android.support.customtabs.trusted.SPLASH_SCREEN_FADE_OUT_DURATION" android:value="0" />
-            <meta-data android:name="android.support.customtabs.trusted.FILE_PROVIDER_AUTHORITY" android:value="${applicationId}.splash" />
-            <meta-data android:name="android.support.customtabs.trusted.START_CHROME_BEFORE_ANIMATION_COMPLETE" android:value="true" />
+        <activity android:name=".LauncherActivity" android:exported="true"
+            android:windowSoftInputMode="adjustResize" android:theme="@style/Theme.Muhasebe.Starting">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -33,17 +22,5 @@
                 <data android:scheme="https" android:host="muhasebe-defteri.vercel.app" />
             </intent-filter>
         </activity>
-        <activity android:name="com.google.androidbrowserhelper.trusted.FocusActivity" android:exported="false" />
-        <activity android:name="com.google.androidbrowserhelper.trusted.ManageDataLauncherActivity"
-            android:exported="false" android:excludeFromRecents="true">
-            <meta-data android:name="android.support.customtabs.trusted.MANAGE_SPACE_URL" android:value="@string/launch_url" />
-        </activity>
-        <activity android:name="com.google.androidbrowserhelper.trusted.WebViewFallbackActivity"
-            android:exported="false" android:configChanges="orientation|screenSize" />
-        <provider android:name="androidx.core.content.FileProvider"
-            android:authorities="${applicationId}.splash"
-            android:exported="false" android:grantUriPermissions="true">
-            <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/splash_paths" />
-        </provider>
     </application>
 </manifest>

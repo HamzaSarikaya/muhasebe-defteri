@@ -1,9 +1,9 @@
 import {getLocale, getTranslations} from 'next-intl/server';
 import {ChevronRight} from 'lucide-react';
 import {Link} from '@/i18n/navigation';
-import {isSupabaseConfigured} from '@/lib/supabase/config';
-import {createClient} from '@/lib/supabase/server';
-import {balances, statementCycle, type Ledger} from '@/lib/finance/ledger';
+import {readLedger} from '@/lib/finance/read';
+import {LedgerAccess} from './access';
+import {balances, statementCycle} from '@/lib/finance/ledger';
 import {currencies, formatMoney} from '@/lib/finance/money';
 import {PageHeading} from '@/components/shared/page-heading';
 import {CardFields, ClientFields, Editor, Field, RecordForm} from './forms';
@@ -14,19 +14,9 @@ type Module = 'cards' | 'clients' | 'transactions';
 async function Records({module}: {module: Module}) {
   const t = await getTranslations('Finance');
   const d = await getTranslations('Dashboard');
-  if (!isSupabaseConfigured()) return <section className="panel ledger-block"><p>{t('setup')}</p><Link href="/settings" className="ledger-link">{t('settings')}</Link></section>;
-  const db = await createClient();
-  const {data: {user}, error: authError} = await db.auth.getUser();
-  if (!user) {
-    if (authError && authError.name !== 'AuthSessionMissingError' && authError.status !== 401 && authError.status !== 403 && authError.status !== 400) throw authError;
-    return <section className="panel ledger-block"><h2>{t('login')}</h2><RecordForm action="login" label={t('signIn')}>
-      <Field name="email" type="email" label={t('email')} autoComplete="username" required/><Field name="password" type="password" label={t('password')} autoComplete="current-password" required/>
-    </RecordForm></section>;
-  }
-  const {data: snapshot,error} = await db.rpc('ledger_snapshot');
-  if (error || !snapshot) throw new Error('Ledger unavailable');
-  const data = snapshot as Ledger;
-  const owner = user.id;
+  const result = await readLedger();
+  if (result.state !== 'ready') return <LedgerAccess state={result.state}/>;
+  const {data, owner} = result;
   const locale = await getLocale();
   const today = new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Istanbul'}).format(new Date());
   const totals = balances(data);

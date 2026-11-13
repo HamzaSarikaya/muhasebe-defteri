@@ -8,5 +8,5 @@ export default async function LocaleLayout({children, params}: {children: React.
   if (!hasLocale(routing.locales, locale)) notFound();
   setRequestLocale(locale);
   const messages = await getMessages();
-  return <html lang={locale} className="dark"><body><NextIntlClientProvider locale={locale} messages={messages}>{children}</NextIntlClientProvider></body></html>;
+  return <html lang={locale} style={{background: '#f2f2f4', colorScheme: 'light'}}><body><NextIntlClientProvider locale={locale} messages={messages}>{children}</NextIntlClientProvider></body></html>;
 }

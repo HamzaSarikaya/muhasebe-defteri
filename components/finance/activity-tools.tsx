@@ -26,9 +26,16 @@ export function ExportTools({data, filters, today}: {data: Ledger; filters: Filt
   function download(kind: 'csv' | 'json') {
     try {
       const content = kind === 'csv' ? activityCsv(data, filters) : backupJson(data, new Date().toISOString());
+      const name = `muhasebe-${kind === 'json' ? 'backup' : 'activity'}-${today}.${kind}`;
+      const native = (window as Window & {MuhasebeFiles?: {postMessage: (value: string) => void}}).MuhasebeFiles;
+      if (native) {
+        native.postMessage(JSON.stringify({name, type: kind === 'csv' ? 'text/csv' : 'application/json', content}));
+        setMessage(t('downloaded'));
+        return;
+      }
       const url = URL.createObjectURL(new Blob([content], {type: kind === 'csv' ? 'text/csv;charset=utf-8' : 'application/json;charset=utf-8'}));
       const link = document.createElement('a');
-      link.href = url; link.download = `muhasebe-${kind === 'json' ? 'backup' : 'activity'}-${today}.${kind}`;
+      link.href = url; link.download = name;
       document.body.append(link); link.click(); link.remove();
       window.setTimeout(() => URL.revokeObjectURL(url), 1000);
       setMessage(t('downloaded'));
