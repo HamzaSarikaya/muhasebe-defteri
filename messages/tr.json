@@ -264,7 +264,11 @@
     "json": "Tam yedek indir (JSON)",
     "exportNote": "CSV, seçili filtredeki işlem ve tahsilatları içerir. JSON, filtrelerden bağımsız tüm hesapları, işlemleri ve abonelikleri yedekler. İçe aktarma henüz desteklenmiyor.",
     "downloaded": "Dosya indirmesi başlatıldı.",
-    "downloadError": "Dosya hazırlanamadı. Yeniden deneyin."
+    "downloadError": "Dosya hazırlanamadı. Yeniden deneyin.",
+    "downloadRequested": "Dosyayı kaydetmek için bir konum seçin. Kaydetme sonucu uygulamada gösterilecek.",
+    "previous": "Önceki",
+    "next": "Sonraki",
+    "page": "Sayfa {page} / {pages}"
   },
   "Subscriptions": {
     "provider": "Sağlayıcı",

@@ -4,7 +4,7 @@ Müşteri alacaklarını, kart harcamalarını, tahsilatları ve abonelikleri ta
 
 ## Android uygulaması
 
-Android 7.0 ve üzeri için imzalı [APK 0.4.4 dosyasını](https://github.com/HamzaSarikaya/muhasebe-defteri/releases/download/v0.4.4/Muhasebe-0.4.4.apk) indirin ve açın. Mevcut uygulamayı kaldırmadan güncelleyebilirsiniz. Bu sürüm, Chrome açılışına geçmek yerine uygulamanın kendi WebView penceresini kullanır. Logo ilk içerik çizilene kadar kalır. Güncel Android System WebView ve internet bağlantısı gerekir. Önceki tarayıcı oturumu aktarılmadığından ilk güncellemede bir kez yeniden giriş yapılır; mali kayıtlar sunucuda korunur.
+Android 7.0 ve üzeri için imzalı [APK 0.4.5 dosyasını](https://github.com/HamzaSarikaya/muhasebe-defteri/releases/download/v0.4.5/Muhasebe-0.4.5.apk) indirin ve açın. Mevcut uygulamayı kaldırmadan güncelleyebilirsiniz. Bu sürüm, Chrome açılışına geçmek yerine uygulamanın kendi WebView penceresini kullanır. Logo ilk içerik çizilene kadar kalır. Güncel Android System WebView ve internet bağlantısı gerekir. 0.4.3 veya önceki sürümden geçerken tarayıcı oturumu aktarılmadığından bir kez yeniden giriş yapılır; mali kayıtlar sunucuda korunur.
 
 APK'nın kaynağı ve yeniden derleme adımları [android/README.md](android/README.md) içindedir. İmza anahtarları depoya dahil değildir. Kaynaklardan kendi anahtarınızla derlediğiniz paketin site doğrulaması için `public/.well-known/assetlinks.json` dosyasını kendi sertifikanızla güncelleyin.
 
@@ -88,3 +88,9 @@ Standart tarayıcı testlerini bağlantı ayarları boşken çalıştırın. Otu
 Birim testleri ve yerel servis taklidi gerçek Supabase kimlik doğrulaması, oturum yenilemesi veya canlı bulut bağlantısını doğrulamaz. Canlı servislerle çalışan mali kayıt senaryosu ayrıca kendi test projenizde çalıştırılmalıdır. Üretim service worker'ı yalnızca statik uygulama dosyalarını ve çevrimdışı bilgi sayfasını önbelleğe alır; finansal sayfalar ve oturum yanıtları önbelleğe alınmaz.
 
 GitHub Actions, ana dal güncellemeleri ve pull request’lerde lint, TypeScript, birim/veritabanı testleri, üretim derlemesi, PWA ve dolu hesap tarayıcı senaryolarını çalıştıracak şekilde tanımlıdır.
+
+## Performans kontrolü
+
+İşlem/tahsilat geçmişi, taksit takvimi ve abonelik listeleri 50 satırlık sayfalarla gösterilir. Filtreler bütün kayıtları arar; CSV tüm eşleşmeleri, JSON tam yedeği içerir. Kapalı işlem ve abonelik formları ilk açıldığında hazırlanır; kapatıp açmak taslağı silmez. Abonelik sayfası tarayıcıya ilgisiz işlem geçmişini taşımaz. Parasal hesaplar BigInt ile, kur dönüşümleri yarım kuruşu sıfırdan uzağa yuvarlayarak yapılır.
+
+Tekrarlanabilir, sahte verili hesaplama ölçümü: `npx tsx scripts/benchmark-finance.ts 10000`. Ağ ve tarayıcı çizim süreleri bu ölçüme dahil değildir. Mali veriler ortak bir önbelleğe alınmaz.

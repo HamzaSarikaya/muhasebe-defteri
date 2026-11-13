@@ -29,8 +29,10 @@ export function ExportTools({data, filters, today}: {data: Ledger; filters: Filt
       const name = `muhasebe-${kind === 'json' ? 'backup' : 'activity'}-${today}.${kind}`;
       const native = (window as Window & {MuhasebeFiles?: {postMessage: (value: string) => void}}).MuhasebeFiles;
       if (native) {
-        native.postMessage(JSON.stringify({name, type: kind === 'csv' ? 'text/csv' : 'application/json', content}));
-        setMessage(t('downloaded'));
+        const message = JSON.stringify({name, type: kind === 'csv' ? 'text/csv' : 'application/json', content});
+        if (message.length > 16 * 1024 * 1024 || new TextEncoder().encode(content).byteLength > 16 * 1024 * 1024) throw new RangeError('export');
+        native.postMessage(message);
+        setMessage(t('downloadRequested'));
         return;
       }
       const url = URL.createObjectURL(new Blob([content], {type: kind === 'csv' ? 'text/csv;charset=utf-8' : 'application/json;charset=utf-8'}));

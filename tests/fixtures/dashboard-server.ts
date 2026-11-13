@@ -1,6 +1,7 @@
 import {createServer} from 'node:http';
 import {spawn} from 'node:child_process';
 import {sampleLedger} from './dashboard-data';
+import {largeLedger} from './large-ledger';
 import type {Ledger, Subscription} from '../../lib/finance/ledger';
 import {dueMonth} from '../../lib/finance/ledger';
 
@@ -56,6 +57,7 @@ const backend = createServer(async (request, response) => {
     if (id.endsWith('005')) await new Promise(resolve => setTimeout(resolve, 1500));
     if (id.endsWith('003')) {response.statusCode = 503; response.end(JSON.stringify({message: 'Fixture unavailable'})); return;}
     const ledger = id.endsWith('002') ? {...sampleLedger, clients: [], accounts: [], cards: [], transactions: [], payments: [], subscriptions: []}
+      : id.endsWith('099') ? largeLedger(1200)
       : id.endsWith('004') ? {...sampleLedger, transactions: sampleLedger.transactions.map((row, index) => index === 0 ? {...row, amount: '9223372036854775807'} : row)} : ledgerForUser();
     response.end(JSON.stringify(ledger));
   } else {response.statusCode = 404; response.end('{}');}

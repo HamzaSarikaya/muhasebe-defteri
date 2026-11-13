@@ -72,4 +72,27 @@ public final class SplashScreenTest {
         } finally { instrumentation.removeMonitor(monitor); }
     }
 
+    @Test public void spaHistoryIsPreservedForRecovery() throws Exception {
+        try (ActivityScenario<LauncherActivity> scenario = ActivityScenario.launch(LauncherActivity.class)) {
+            AtomicBoolean ready = new AtomicBoolean();
+            long end = System.currentTimeMillis() + 30000;
+            while (!ready.get() && System.currentTimeMillis() < end) {
+                scenario.onActivity(activity -> ready.set(activity.cover.getVisibility() == View.GONE));
+                Thread.sleep(100);
+            }
+            assertTrue(ready.get());
+            scenario.onActivity(activity -> activity.webView.evaluateJavascript("history.pushState({},'', '/tr/reports?recovery=1')", null));
+            java.util.concurrent.atomic.AtomicReference<String> saved = new java.util.concurrent.atomic.AtomicReference<>();
+            end = System.currentTimeMillis() + 10000;
+            while (!"https://muhasebe-defteri.vercel.app/tr/reports?recovery=1".equals(saved.get()) && System.currentTimeMillis() < end) {
+                scenario.onActivity(activity -> {
+                    android.os.Bundle state = new android.os.Bundle(); activity.onSaveInstanceState(state);
+                    saved.set(state.getString("workspace.currentUrl"));
+                });
+                Thread.sleep(100);
+            }
+            assertEquals("https://muhasebe-defteri.vercel.app/tr/reports?recovery=1", saved.get());
+        }
+    }
+
 }

@@ -134,3 +134,52 @@ test('signed-out and empty phase 4 states do not expose other account records', 
   await page.goto('/en/reports');
   await expect(page.getByText('No activity in this selection')).toBeVisible();
 });
+
+test('large histories bound rendered rows, reset pages after search and export the complete ledger', async ({page, context}) => {
+  await session(context, owner.slice(0, -3) + '099');
+  const errors: string[] = []; page.on('pageerror', error => errors.push(error.message));
+  await page.goto('/tr/transactions');
+  const lists = page.locator('section.panel.ledger-block').filter({has: page.locator('article')});
+  await expect(lists.first().locator('article')).toHaveCount(50);
+  await expect(lists.last().locator('article')).toHaveCount(50);
+  // The first list's navigation is always the transaction pager.
+  const controls = page.locator('.page-controls').first();
+  await controls.getByRole('button', {name: 'Sonraki'}).click();
+  await expect(controls.getByRole('status')).toHaveText('Sayfa 2 / 24');
+  await expect(lists.first().locator('article').first()).toContainText('İşlem 00051');
+  await page.getByLabel('Ara', {exact: true}).fill('İŞLEM 01200');
+  await expect(page.locator('article')).toHaveCount(1);
+  await expect(page.locator('article')).toContainText('İşlem 01200');
+  await page.getByRole('button', {name: 'Temizle', exact: true}).click();
+  await expect(controls.getByRole('status')).toHaveText('Sayfa 1 / 24');
+  const downloading = page.waitForEvent('download');
+  await page.getByRole('button', {name: 'Filtreli CSV indir'}).click();
+  const file = await downloading;
+  const csv = await readFile((await file.path())!, 'utf8');
+  expect(csv).toContain('İşlem 01200');
+  expect(csv.split('\r\n').length).toBeGreaterThan(1200);
+  await page.getByText('Borç veya harcama ekle', {exact: true}).click();
+  const form = page.locator('details').filter({has: page.getByText('Borç veya harcama ekle', {exact: true})}).locator('form');
+  await form.getByLabel('Açıklama', {exact: true}).fill('İşlem taslağı');
+  await page.getByText('Borç veya harcama ekle', {exact: true}).click();
+  await page.getByText('Borç veya harcama ekle', {exact: true}).click();
+  await expect(form.getByLabel('Açıklama', {exact: true})).toHaveValue('İşlem taslağı');
+  await page.getByText('Tahsilat kaydet', {exact: true}).click();
+  await expect(page.getByRole('combobox', {name: 'Tahsil edilecek borç', exact: true})).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  expect(errors).toEqual([]);
+});
+
+test('native export requests a save location without claiming the file is saved', async ({page, context}) => {
+  await session(context);
+  await page.addInitScript(() => {
+    (window as Window & {MuhasebeFiles?: {postMessage: (value: string) => void}; exportMessage?: string}).MuhasebeFiles = {postMessage(value) {
+      (window as Window & {exportMessage?: string}).exportMessage = value;
+    }};
+  });
+  await page.goto('/tr/reports');
+  await page.getByRole('button', {name: 'Tam yedek indir (JSON)'}).click();
+  await expect(page.locator('.export-tools [role="status"]')).toContainText('bir konum seçin');
+  const message = await page.evaluate(() => (window as Window & {exportMessage?: string}).exportMessage);
+  expect(JSON.parse(message!).content).toContain('muhasebe-ledger');
+});

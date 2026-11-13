@@ -264,7 +264,11 @@
     "json": "Download full backup (JSON)",
     "exportNote": "CSV contains transactions and collections matching the filters. JSON backs up all accounts, transactions and subscriptions regardless of filters. Import is not yet supported.",
     "downloaded": "File download started.",
-    "downloadError": "Could not prepare the file. Try again."
+    "downloadError": "Could not prepare the file. Try again.",
+    "downloadRequested": "Choose where to save the file. The app will show the save result.",
+    "previous": "Previous",
+    "next": "Next",
+    "page": "Page {page} / {pages}"
   },
   "Subscriptions": {
     "provider": "Provider",

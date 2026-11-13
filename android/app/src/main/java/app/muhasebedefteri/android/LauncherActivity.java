@@ -46,6 +46,7 @@ public final class LauncherActivity extends ComponentActivity {
     static final int CANVAS = Color.rgb(242, 242, 244);
     private static final int SAVE_FILE = 10;
     private static final int MAX_EXPORT_BYTES = 16 * 1024 * 1024;
+    private static final String CURRENT_URL = "workspace.currentUrl";
     WebView webView;
     LinearLayout cover;
     private FrameLayout root;
@@ -82,6 +83,7 @@ public final class LauncherActivity extends ComponentActivity {
         createWebView();
         Uri link = getIntent().getData();
         if (isWorkspaceUrl(link)) currentUrl = link.toString();
+        if (state != null && isWorkspaceUrl(Uri.parse(state.getString(CURRENT_URL, "")))) currentUrl = state.getString(CURRENT_URL);
         if (state == null || webView.restoreState(state) == null) webView.loadUrl(currentUrl);
     }
     private void buildCover() {
@@ -145,6 +147,9 @@ public final class LauncherActivity extends ComponentActivity {
             }
             @Override public void onPageStarted(WebView view, String url, Bitmap icon) {
                 failed = false;
+                if (isWorkspaceUrl(Uri.parse(url))) currentUrl = url;
+            }
+            @Override public void doUpdateVisitedHistory(WebView view, String url, boolean isReload) {
                 if (isWorkspaceUrl(Uri.parse(url))) currentUrl = url;
             }
             @Override public void onPageCommitVisible(WebView view, String url) {
@@ -235,11 +240,13 @@ public final class LauncherActivity extends ComponentActivity {
     }
     @Override protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
+        setIntent(intent);
         Uri uri = intent.getData();
         if (webView != null && isWorkspaceUrl(uri)) webView.loadUrl(uri.toString());
     }
     @Override protected void onSaveInstanceState(Bundle state) {
         super.onSaveInstanceState(state);
+        state.putString(CURRENT_URL, currentUrl);
         if (webView != null) webView.saveState(state);
     }
     @Override protected void onPause() {

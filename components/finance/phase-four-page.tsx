@@ -12,7 +12,7 @@ async function Records({module}: {module: 'subscriptions' | 'reports'}) {
   const locale = await getLocale();
   const result = await readLedger();
   return <>{result.state !== 'ready' ? <LedgerAccess state={result.state}/> : module === 'subscriptions' ?
-    <SubscriptionsView data={result.data} owner={result.owner} locale={locale} today={istanbulToday()}/> : <ReportsView data={result.data} locale={locale} today={istanbulToday()}/>}</>;
+    <SubscriptionsView data={{base: result.data.base, cards: result.data.cards, subscriptions: result.data.subscriptions}} owner={result.owner} locale={locale} today={istanbulToday()}/> : <ReportsView data={result.data} locale={locale} today={istanbulToday()}/>}</>;
 }
 
 export async function PhaseFourPage({module}: {module: 'subscriptions' | 'reports'}) {

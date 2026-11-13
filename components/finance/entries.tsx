@@ -1,12 +1,13 @@
 'use client';
 
-import {useState} from 'react';
+import {useDeferredValue, useMemo, useState} from 'react';
 import {useTranslations} from 'next-intl';
 import {currencies, formatMoney, installments, minor, type Currency} from '@/lib/finance/money';
-import {balances, type Ledger} from '@/lib/finance/ledger';
+import {type Ledger} from '@/lib/finance/ledger';
 import {Field, RecordForm, Remove} from './forms';
-import {emptyFilters, filterActivity} from '@/lib/finance/reports';
+import {activityIndex, emptyFilters, filterActivity} from '@/lib/finance/reports';
 import {ActivityFilters, ExportTools} from './activity-tools';
+import {LazyDetails, PageControls, usePageWindow} from './page-window';
 
 function EntryFields({data, today, locale}: {data: Ledger; today: string; locale: string}) {
   const t = useTranslations('Finance');
@@ -43,38 +44,49 @@ export function Entries({owner,data,today,locale}: {owner: string; data: Ledger;
   const t = useTranslations('Finance');
   const a = useTranslations('Activity');
   const [filters, setFilters] = useState(emptyFilters);
-  const selected = filterActivity(data, filters);
-  const {allocated} = balances(data);
-  const accounts = new Map(data.accounts.map(a => [a.id,a.name]));
-  const clients = new Map(data.clients.map(c => [c.id,c.name]));
-  const entries = new Map(data.transactions.map(e => [e.id,e]));
-  const open = data.transactions.filter(e => e.client_id && ['debt','expense'].includes(e.type) && e.status !== 'cancelled' && BigInt(e.amount) > (allocated.get(e.id) ?? 0n));
+  const deferred = useDeferredValue(filters);
+  const index = useMemo(() => activityIndex(data), [data]);
+  const selected = useMemo(() => filterActivity(data, deferred, index), [data, deferred, index]);
+  const allocated = useMemo(() => {
+    const result = new Map<string, bigint>();
+    for (const row of data.payments) if (row.transaction_id) result.set(row.transaction_id, (result.get(row.transaction_id) ?? 0n) + BigInt(row.amount));
+    return result;
+  }, [data.payments]);
+  const accounts = useMemo(() => new Map(data.accounts.map(a => [a.id,a.name])), [data.accounts]);
+  const clients = useMemo(() => new Map(data.clients.map(c => [c.id,c.name])), [data.clients]);
+  const entries = index.entries;
+  const open = useMemo(() => data.transactions.filter(e => e.client_id && ['debt','expense'].includes(e.type) && e.status !== 'cancelled' && BigInt(e.amount) > (allocated.get(e.id) ?? 0n)), [data.transactions, allocated]);
+  const scope = JSON.stringify(deferred);
+  const history = usePageWindow(selected.transactions, scope);
+  const receipts = usePageWindow(selected.payments, scope);
   return <>
-    <details className="panel ledger-block"><summary>{t('newEntry')}</summary>
+    <LazyDetails className="panel ledger-block" summary={t('newEntry')}>
       <RecordForm owner={owner} action="entry" label={t('save')}><EntryFields data={data} today={today} locale={locale}/></RecordForm>
-    </details>
-    <details className="panel ledger-block"><summary>{t('collect')}</summary>
+    </LazyDetails>
+    <LazyDetails className="panel ledger-block" summary={t('collect')}>{() => <>
       {open.length ? <RecordForm owner={owner} action="collect" label={t('collect')}>
         <label>{t('target')}<select name="target" required defaultValue=""><option value="">{t('select')}</option>{open.map(e => <option key={e.id} value={e.id}>
           {clients.get(e.client_id!)} / {accounts.get(e.client_account_id ?? '')} · {e.title} ({e.installment_current}/{e.installment_count}) · {e.due_date ?? e.transaction_date} · {formatMoney(BigInt(e.amount)-(allocated.get(e.id) ?? 0n),e.currency,locale)}
         </option>)}</select></label>
         <Field label={t('amount')} name="amount" decimal required/><Field label={t('payDate')} name="date" type="date" value={today} required/>
         <label>{t('method')}<select name="method">{['bank_transfer','cash','card'].map(k => <option key={k} value={k}>{t(k)}</option>)}</select></label>
-      </RecordForm> : <p>{t('noDebt')}</p>}
-    </details>
+      </RecordForm> : <p>{t('noDebt')}</p>}</>}
+    </LazyDetails>
     <section className="panel ledger-block" aria-label={a('filters')}><ActivityFilters value={filters} onChange={setFilters}/><p className="filter-note" role="status">{a('results', {entries: selected.transactions.length, payments: selected.payments.length})}</p></section>
-    <section className="panel ledger-block"><h2>{t('history')}</h2>{!selected.transactions.length && <p>{a('noResults')}</p>}
-      {selected.transactions.map(e => <article key={e.id} className="ledger-line"><div><h3>{e.title}</h3>
-        <small>{t(e.type)} · {clients.get(e.client_id ?? '')} {accounts.get(e.client_account_id ?? '')} {data.cards.find(c => c.id === e.credit_card_id)?.name}</small>
+    <section className="panel ledger-block" aria-busy={filters !== deferred}><h2>{t('history')}</h2>{!selected.transactions.length && <p>{a('noResults')}</p>}
+      {history.rows.map(e => <article key={e.id} className="ledger-line"><div><h3>{e.title}</h3>
+        <small>{t(e.type)} · {clients.get(e.client_id ?? '')} {accounts.get(e.client_account_id ?? '')} {index.cards.get(e.credit_card_id ?? '')?.name}</small>
         <small>{e.transaction_date} {e.due_date && ' · '+t('dueLabel')+' '+e.due_date} {e.installment_count > 1 && ' · '+t('installment')+' '+e.installment_current+'/'+e.installment_count}</small></div>
         <div className="ledger-amount"><strong className="money">{formatMoney(e.amount,e.currency,locale)}</strong>
           <small>{e.status === 'cancelled' ? t('cancelled') : e.client_id && ['debt','expense'].includes(e.type) ? t('remaining')+' '+formatMoney(BigInt(e.amount)-(allocated.get(e.id) ?? 0n),e.currency,locale) : ''}</small>
           {e.status !== 'cancelled' && e.installment_current === 1 && <RecordForm owner={owner} action="cancel" confirm label={t(e.installment_count > 1 ? 'cancelGroup' : 'cancel')}><input type="hidden" name="id" value={e.id}/></RecordForm>}
         </div></article>)}
+      <PageControls {...history} label={t('history')}/>
     </section>
-    <section className="panel ledger-block"><h2>{t('receipts')}</h2>{!selected.payments.length && <p>{a('noResults')}</p>}
-      {selected.payments.map(p => <article key={p.id} className="ledger-line"><div><h3>{clients.get(p.client_id)} · {entries.get(p.transaction_id ?? '')?.title ?? t('advance')}</h3><small>{p.payment_date} · {t(p.payment_method)}</small></div>
+    <section className="panel ledger-block" aria-busy={filters !== deferred}><h2>{t('receipts')}</h2>{!selected.payments.length && <p>{a('noResults')}</p>}
+      {receipts.rows.map(p => <article key={p.id} className="ledger-line"><div><h3>{clients.get(p.client_id)} · {entries.get(p.transaction_id ?? '')?.title ?? t('advance')}</h3><small>{p.payment_date} · {t(p.payment_method)}</small></div>
         <div className="ledger-amount"><strong className="money">{formatMoney(p.amount,p.currency,locale)}</strong><Remove owner={owner} kind="payment" id={p.id}/></div></article>)}
+      <PageControls {...receipts} label={t('receipts')}/>
     </section>
     <ExportTools data={data} filters={filters} today={today}/>
   </>;

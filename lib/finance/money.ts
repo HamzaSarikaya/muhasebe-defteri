@@ -1,6 +1,3 @@
-import Decimal from 'decimal.js';
-
-const Exact = Decimal.clone({precision: 50, rounding: Decimal.ROUND_HALF_UP});
 const maxMinor = 9223372036854775807n;
 export const currencies = ['TRY', 'USD', 'EUR'] as const;
 export type Currency = typeof currencies[number];
@@ -13,29 +10,47 @@ export function currency(value: string): Currency {
 // Accept ungrouped decimal input in either interface language.
 export function minor(value: string, allowZero = false): bigint {
   if (!/^\d{1,17}([.,]\d{1,2})?$/.test(value)) throw new RangeError('amount');
-  const result = BigInt(new Exact(value.replace(',', '.')).times(100).toFixed(0));
+  const [whole, fraction = ''] = value.replace(',', '.').split('.');
+  const result = BigInt(whole) * 100n + BigInt(fraction.padEnd(2, '0'));
   if (result > maxMinor || (!allowZero && result === 0n)) throw new RangeError('amount');
   return result;
 }
 
 export function rate(value: string): string {
   if (!/^\d{1,12}([.,]\d{1,6})?$/.test(value)) throw new RangeError('rate');
-  const result = new Exact(value.replace(',', '.'));
-  if (!result.isPositive() || result.isZero()) throw new RangeError('rate');
-  return result.toFixed();
+  const [whole, fraction = ''] = value.replace(',', '.').split('.');
+  const digits = fraction.replace(/0+$/, '');
+  const result = BigInt(whole).toString() + (digits ? '.' + digits : '');
+  if (result === '0') throw new RangeError('rate');
+  return result;
 }
 
 export function convert(amount: bigint, exchangeRate: string): bigint {
-  return BigInt(new Exact(amount.toString()).times(rate(exchangeRate)).toFixed(0));
+  const [whole, fraction = ''] = rate(exchangeRate).split('.');
+  const scale = 10n ** BigInt(fraction.length);
+  const product = amount * BigInt(whole + fraction);
+  // ROUND_HALF_UP, including negative amounts, without floating-point values.
+  const rounded = ((product < 0n ? -product : product) + scale / 2n) / scale;
+  return product < 0n ? -rounded : rounded;
 }
 
 export function decimalAmount(amount: bigint): string {
-  return new Exact(amount.toString()).div(100).toFixed(2);
+  const digits = (amount < 0n ? -amount : amount).toString().padStart(3, '0');
+  return (amount < 0n ? '-' : '') + digits.slice(0, -2) + '.' + digits.slice(-2);
 }
 
+// Cache formatter configuration only; financial values never enter this cache.
+const formatters = new Map<string, Intl.NumberFormat>();
 export function formatMoney(amount: string | bigint, unit: Currency, locale: string) {
+  const key = locale + '/' + unit;
+  let formatter = formatters.get(key);
+  if (!formatter) {
+    formatter = new Intl.NumberFormat(locale, {style: 'currency', currency: unit});
+    if (formatters.size >= 24) formatters.delete(formatters.keys().next().value!);
+    formatters.set(key, formatter);
+  }
   // Intl accepts exact decimal strings at runtime (ECMA-402).
-  const format = new Intl.NumberFormat(locale, {style: 'currency', currency: unit}).format as unknown as (v: string) => string;
+  const format = formatter.format as unknown as (v: string) => string;
   return format(decimalAmount(BigInt(amount)));
 }
 

@@ -23,20 +23,30 @@ export function dashboard(data: Ledger, today: string) {
     payments: data.payments.filter(row => row.payment_date <= today)};
   const totals = balances(current);
   const active = current.transactions.filter(row => row.status !== 'cancelled');
+  const cardEntries = new Map<string, Entry[]>();
+  for (const row of active) if (row.credit_card_id) {
+    const rows = cardEntries.get(row.credit_card_id) ?? [];
+    rows.push(row); cardEntries.set(row.credit_card_id, rows);
+  }
+  const collections = new Map<string, bigint>();
+  for (const row of current.payments) {
+    const key = row.payment_date.slice(0, 7) + '/' + row.currency;
+    collections.set(key, (collections.get(key) ?? 0n) + BigInt(row.amount));
+  }
   const month = today.slice(0, 7);
   const units = [data.base, ...currencies.filter(unit => unit !== data.base && (active.some(row => row.currency === unit) || current.payments.some(row => row.currency === unit)))];
   const open = active.filter(row => (row.type === 'debt' || row.type === 'expense') && BigInt(row.amount) > (totals.allocated.get(row.id) ?? 0n));
   const metrics = units.map(unit => {
     let receivable = 0n;
     for (const [key, amount] of totals.clients) if (key.endsWith('/' + unit) && amount > 0n) receivable += amount;
-    const collection = current.payments.filter(row => row.currency === unit && row.payment_date.startsWith(month)).reduce((sum, row) => sum + BigInt(row.amount), 0n);
+    const collection = collections.get(month + '/' + unit) ?? 0n;
     const installments = open.filter(row => row.currency === unit && row.installment_count > 1);
     const pending = installments.reduce((sum, row) => sum + BigInt(row.amount) - (totals.allocated.get(row.id) ?? 0n), 0n);
     return {unit, receivable: receivable.toString(), collection: collection.toString(), pending: pending.toString(), count: installments.length};
   });
   const cards = data.cards.map(card => {
     const shares = new Map<string, bigint>();
-    for (const row of active.filter(row => row.credit_card_id === card.id)) {
+    for (const row of cardEntries.get(card.id) ?? []) {
       const amount = cardRemainder(row, totals.allocated.get(row.id) ?? 0n);
       if (amount !== null) shares.set(row.client_id ?? '', (shares.get(row.client_id ?? '') ?? 0n) + amount);
     }
@@ -50,15 +60,29 @@ export function dashboard(data: Ledger, today: string) {
     date.setUTCMonth(date.getUTCMonth() - 5 + index);
     return date.toISOString().slice(0, 7);
   });
-  const trends = units.map(unit => ({unit, rows: months.map(month => {
+  // Trends need client receivables only. Build each monthly snapshot once for
+  // all currencies, without recalculating card FX and account balances.
+  const history = months.map(month => {
     const cutoff = month === today.slice(0, 7) ? today : month + '-31';
-    const historical = balances({...current, transactions: current.transactions.filter(row => row.transaction_date <= cutoff),
-      payments: current.payments.filter(row => row.payment_date <= cutoff)});
-    let debt = 0n;
-    for (const [key, amount] of historical.clients) if (key.endsWith('/' + unit) && amount > 0n) debt += amount;
-    const collected = current.payments.filter(row => row.currency === unit && row.payment_date.startsWith(month)).reduce((sum, row) => sum + BigInt(row.amount), 0n);
-    return {month, debt: debt.toString(), collected: collected.toString()};
-  })}));
+    const clients = new Map<string, bigint>();
+    for (const row of active) if (row.client_id && row.transaction_date <= cutoff) {
+      const key = row.client_id + '/' + row.currency;
+      const sign = row.type === 'refund' || row.type === 'payment' ? -1n : 1n;
+      clients.set(key, (clients.get(key) ?? 0n) + sign * BigInt(row.amount));
+    }
+    for (const row of current.payments) if (row.payment_date <= cutoff) {
+      const key = row.client_id + '/' + row.currency;
+      clients.set(key, (clients.get(key) ?? 0n) - BigInt(row.amount));
+    }
+    const debts = new Map<string, bigint>();
+    for (const [key, amount] of clients) if (amount > 0n) {
+      const unit = key.slice(key.lastIndexOf('/') + 1);
+      debts.set(unit, (debts.get(unit) ?? 0n) + amount);
+    }
+    return {month, debts};
+  });
+  const trends = units.map(unit => ({unit, rows: history.map(({month, debts}) => ({month,
+    debt: (debts.get(unit) ?? 0n).toString(), collected: (collections.get(month + '/' + unit) ?? 0n).toString()}))}));
   // Original purchase values, grouped by person, stay in their own currency.
   const spending = units.map(unit => {
     const groups = new Map<string, bigint>();
