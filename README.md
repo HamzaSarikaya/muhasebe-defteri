@@ -4,6 +4,8 @@ Müşteri alacaklarını, kart harcamalarını, tahsilatları ve abonelikleri ta
 
 ## Android uygulaması
 
+**Güncel web sürümü: [0.4.7](https://github.com/HamzaSarikaya/muhasebe-defteri/releases/latest). Android APK sürümü: 0.4.6.** Web arayüzündeki 0.4.7 yükleme ekranı güncellemesi, mevcut Android uygulamasında da açılır. Bu güncelleme için yeni APK kurmanız gerekmez; APK bağlantısındaki 0.4.6, web arayüzünün eski olduğu anlamına gelmez.
+
 Android 7.0 ve üzeri için imzalı [APK 0.4.6 dosyasını](https://github.com/HamzaSarikaya/muhasebe-defteri/releases/download/v0.4.6/Muhasebe-0.4.6.apk) indirin ve açın. Mevcut uygulamayı kaldırmadan güncelleyebilirsiniz. Bu sürüm, Chrome açılışına geçmek yerine uygulamanın kendi WebView penceresini kullanır. Logo ilk içerik çizilene kadar kalır. Güncel Android System WebView ve internet bağlantısı gerekir. 0.4.3 veya önceki sürümden geçerken tarayıcı oturumu aktarılmadığından bir kez yeniden giriş yapılır; mali kayıtlar sunucuda korunur.
 
 APK'nın kaynağı ve yeniden derleme adımları [android/README.md](android/README.md) içindedir. İmza anahtarları depoya dahil değildir. Kaynaklardan kendi anahtarınızla derlediğiniz paketin site doğrulaması için `public/.well-known/assetlinks.json` dosyasını kendi sertifikanızla güncelleyin.
