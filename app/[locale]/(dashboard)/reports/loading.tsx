@@ -1,1 +1,5 @@
-export {PageLoading as default} from '@/components/layout/page-loading';
+import {PageLoading} from '@/components/layout/page-loading';
+
+export default function Loading() {
+  return <PageLoading view="reports" heading/>;
+}

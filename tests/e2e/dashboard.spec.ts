@@ -9,6 +9,40 @@ async function session(context: BrowserContext, id = owner) {
   await context.addCookies([{name: 'sb-127-auth-token', value: 'base64-' + encode({access_token: token, refresh_token: 'fixture', expires_at: expires, expires_in: 3600, token_type: 'bearer', user: {id}}), domain: 'localhost', path: '/'}]);
 }
 
+test('slow pages show stable skeleton surfaces until private data arrives', async ({page, context}) => {
+  await session(context, owner.slice(0, -3) + '005');
+  const errors: string[] = [];
+  page.on('pageerror', error => errors.push(error.message));
+  for (const route of ['/tr', '/tr/cards', '/tr/clients', '/tr/transactions', '/tr/subscriptions', '/tr/reports']) {
+    await page.goto(route, {waitUntil: 'commit'});
+    const loading = page.locator('.route-loading:visible');
+    await expect(loading).toHaveCount(1);
+    await expect(loading).toHaveAttribute('aria-busy', 'true');
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), route).toBe(true);
+    if (route === '/tr') await page.screenshot({path: test.info().outputPath('skeleton-loading.png')});
+    await expect(page.locator('.route-loading')).toHaveCount(0);
+    await expect(page.locator('h1')).toBeVisible();
+  }
+  expect(errors).toEqual([]);
+});
+
+test('navigation streams the destination skeleton and respects reduced motion', async ({page, context}) => {
+  await session(context, owner.slice(0, -3) + '005');
+  await page.emulateMedia({reducedMotion: 'reduce'});
+  await page.goto('/tr/settings');
+  const link = page.locator('nav:visible').getByRole('link', {name: 'Kartlar', exact: true}).first();
+  await link.click();
+  const loading = page.locator('.route-loading:visible');
+  await expect(loading).toHaveCount(1);
+  await expect(loading).toHaveClass(/skeleton-view-cards/);
+  await expect.poll(() => loading.locator('.skeleton').first().evaluate(element => getComputedStyle(element, '::after').animationName)).toBe('none');
+  await expect(page.locator('.route-loading')).toHaveCount(0);
+  await expect(page.getByRole('heading', {name: 'Kart 01', exact: true})).toBeVisible();
+  await expect(page.locator('.navigation-pending')).toHaveCount(0);
+  await page.goBack();
+  await expect(page).toHaveURL('/tr/settings');
+});
+
 test('signed-out dashboard protects financial values and offers sign in', async ({page}) => {
   await page.goto('/tr');
   await expect(page.getByLabel('E-posta', {exact: true})).toBeVisible();

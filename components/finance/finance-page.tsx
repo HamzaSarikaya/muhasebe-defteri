@@ -1,4 +1,6 @@
+import {Suspense} from 'react';
 import {getLocale, getTranslations} from 'next-intl/server';
+import {PageLoading} from '@/components/layout/page-loading';
 import {ChevronRight} from 'lucide-react';
 import {Link} from '@/i18n/navigation';
 import {readLedger} from '@/lib/finance/read';
@@ -60,6 +62,6 @@ async function Records({module}: {module: Module}) {
 }
 export async function FinancePage({module}: {module: Module}) {
   const t = await getTranslations('Modules.'+module);
-  return <><PageHeading title={t('title')} description={t('description')}/><Records module={module}/></>;
+  return <><PageHeading title={t('title')} description={t('description')}/><Suspense fallback={<PageLoading view={module}/>}><Records module={module}/></Suspense></>;
 }
 

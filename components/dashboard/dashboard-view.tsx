@@ -7,8 +7,9 @@ import {useTranslations} from 'next-intl';
 import {Link} from '@/i18n/navigation';
 import type {dashboard} from '@/lib/finance/analytics';
 import {formatMoney, type Currency} from '@/lib/finance/money';
+import {ChartLoading} from '@/components/layout/page-loading';
 
-const Charts = dynamic(() => import('./financial-charts'), {loading: () => <div className="chart-loading" aria-busy="true"/>});
+const Charts = dynamic(() => import('./financial-charts'), {loading: () => <ChartLoading/>});
 type Model = ReturnType<typeof dashboard>;
 
 export function DashboardView({model, clients, locale, today}: {model: Model | null; clients: {id: string; name: string}[]; locale: string; today: string}) {

@@ -59,6 +59,8 @@ Faz 4 yükseltmesi: üçüncü migration'ı uygulayın, `npm ci`, `npm run build
 
 ## Mobil kullanım ve PWA
 
+Genel bakış, müşteri listesi, kartlar, işlemler, abonelikler ve raporlarda veri gelene kadar sayfanın kart, grafik ve liste alanları gri skeleton yer tutucularla gösterilir. Hafif parıltı yalnızca yükleme sırasında çalışır ve hareket azaltma tercihinde kapanır. Veri hazır olduğunda bekleme eklenmeden gerçek içerik gösterilir. Müşteri detayının bulunamadı kontrolü, gerçek HTTP 404 yanıtını korumak için veri okumasını bekler.
+
 Telefon ve yatay ekran yerleşimi, beş hedefli alt menü ve ekran kenarı boşlukları desteklenir. Android tarayıcısının yükleme seçeneği veya iOS Safari → Paylaş → Ana Ekrana Ekle ile kurabilirsiniz. HTTPS gerekir. Kurulu uygulama da finansal işlemleri çevrimiçi yapar.
 
 Çevrimdışıyken yeni sayfa açılışı Türkçe/İngilizce bilgi ekranına gider. Yeniden dene aynı adresi tekrar açar. Açık ekranda bağlantı uyarısı görünür; form gönderilmez ve yazılan alanlar yalnızca açık sekmenin belleğinde kalır. Bağlantı geri geldiğinde otomatik yenileme veya otomatik kayıt olmaz. Sekmeyi kapatmak veya elle yenilemek kaydedilmemiş alanları siler.

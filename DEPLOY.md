@@ -41,6 +41,12 @@ Resmî kaynaklar: [Vercel CLI ile dağıtım](https://vercel.com/docs/projects/d
 
 ## 3. Yayın doğrulaması
 
+Uygulamayı paylaşırken Vercel projesinin sabit üretim alan adını kullanın. Standard Protection açıkken uzun dağıtım bağlantıları Vercel hesabı isteyebilir; bu ekran uygulamanın kendi Supabase girişiyle aynı değildir. Önizleme korumasını kaldırmadan sabit üretim adresinden erişilebilir.
+
+Adres çubuğunda ve tarayıcının yeni parola kayıtlarında Vercel yerine kendi alan adınızın görünmesi için projeye sahip olduğunuz bir alan adı veya alt alan adı bağlayın. Yeni bir alan adı satın almak zorunlu değildir. DNS değerlerini ilgili proje/domain ayarlarından alın; başka sitenin ve e-posta hizmetinin mevcut kayıtlarını koruyun. Üretim Site URL ve gerekiyorsa Auth yönlendirmeleri de yeni adresle güncellenmelidir. Android uygulaması güvenilen hostu sabitlediği için alan adı değişikliği Android kaynakları ve imzalı APK güncellemesi de gerektirir. Google ile giriş eklemek, sitenin yayın adresini değiştirmez.
+
+Kaynaklar: [Standard Protection](https://vercel.com/docs/deployment-protection#standard-protection), [özel alan adı bağlama](https://vercel.com/docs/domains/set-up-custom-domain).
+
 - `/tr` ve `/en` adreslerini açın. Yönetici girişi, çıkış ve sayfa yenilemesinde oturumun korunmasını doğrulayın.
 - Boş hesabın örnek finansal veri göstermediğini kontrol edin. Ayrı test hesabında kart, müşteri, alt hesap, taksit ve tahsilat akışını deneyin; tutarların aynı kaldığını doğrulayın.
 - Abonelik ekleme/düzenleme, filtreler ve CSV/JSON indirmesini doğrulayın. Gerçek hesapla test verisi oluşturmayın.
